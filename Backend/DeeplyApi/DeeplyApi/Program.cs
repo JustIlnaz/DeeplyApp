@@ -1,23 +1,60 @@
+using DeeplyApi.Connection;
+using DeeplyApi.Hubs;
+using DeeplyApi.Interfaces;
+using DeeplyApi.Models;
+using DeeplyApi.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+
+builder.Services.AddHangfire(config =>
+    config.UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("Postgres"))));
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICoupleService, CoupleService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IFeatureService, FeatureService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseAuthorization();
-
+app.UseHttpsRedirection();
+app.UseHangfireDashboard("/hangfire");
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    if (!db.ChallengeTemplates.Any())
+    {
+        db.ChallengeTemplates.AddRange(
+            new ChallengeTemplate { Title = "7-day gratitude", DurationDays = 7 },
+            new ChallengeTemplate { Title = "14-day support ritual", DurationDays = 14 },
+            new ChallengeTemplate { Title = "30-day micro dates", DurationDays = 30 }
+        );
+        db.SaveChanges();
+    }
+}
 
 app.Run();
