@@ -1,0 +1,6 @@
+@DeeplyApi_HostAddress = http://localhost:5190
+
+GET {{DeeplyApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
