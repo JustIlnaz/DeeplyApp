@@ -36,7 +36,7 @@ public class CouplesController(ICoupleService service) : ControllerBase
     {
         userId = 0;
         var header = HttpContext.Request.Headers.Authorization.ToString();
-        var token = string.IsNullOrWhiteSpace(header) ? HttpContext.Request.Headers["X-Access-Token"].ToString() : header.Trim();
+        var token = string.IsNullOrWhiteSpace(header) ? HttpContext.Request.Headers["Authorization"].ToString() : header.Trim();
         if (string.IsNullOrWhiteSpace(token)) return false;
 
         try
