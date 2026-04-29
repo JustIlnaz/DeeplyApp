@@ -7,6 +7,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Couple> Couples => Set<Couple>();
+    public DbSet<Gendre> Gendres => Set<Gendre>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<MemoryEntry> MemoryEntries => Set<MemoryEntry>();
@@ -40,6 +41,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(x => x.User2Id)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<User>()
+            .HasOne(x => x.Gendre)
+            .WithMany(x => x.Users)
+            .HasForeignKey(x => x.GendreId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Gendre>().HasIndex(x => x.Name).IsUnique();
         modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
         modelBuilder.Entity<Couple>().HasIndex(x => x.InviteCode).IsUnique();
         modelBuilder.Entity<MoodEntry>().HasIndex(x => new { x.UserId, x.Day }).IsUnique();

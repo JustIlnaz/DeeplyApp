@@ -14,19 +14,31 @@ public class AuthService(AppDbContext db, JwtService jwtService) : IAuthService
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             return new BadRequestObjectResult(new { message = "Email and password are required" });
 
+        var genderName = request.Gender.Trim();
+        if (string.IsNullOrWhiteSpace(genderName))
+            return new BadRequestObjectResult(new { message = "Gender is required" });
+
         var email = request.Email.Trim().ToLower();
         var exists = await db.Users.AnyAsync(x => x.Email == email);
         if (exists) return new BadRequestObjectResult(new { message = "User already exists" });
+
+        var gendre = await db.Gendres.FirstOrDefaultAsync(x => x.Name.ToLower() == genderName.ToLower());
+        if (gendre is null)
+        {
+            gendre = new Gendre { Name = genderName };
+            db.Gendres.Add(gendre);
+        }
 
         var user = new User
         {
             Email = email,
             Name = request.Name.Trim(),
+            Gendre = gendre,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
-        return new OkObjectResult(new { user.Id, user.Email, user.Name });
+        return new OkObjectResult(new { user.Id, user.Email, user.Name, Gender = gendre.Name });
     }
 
     public async Task<ActionResult> Login(LoginRequest request)
