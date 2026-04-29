@@ -1,31 +1,35 @@
 using DeeplyApi.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DeeplyApi.Connection;
-
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+namespace DeeplyApi.Connection
 {
-    public DbSet<User> Users => Set<User>();
-    public DbSet<Couple> Couples => Set<Couple>();
-    public DbSet<Gendre> Gendres => Set<Gendre>();
-    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
-    public DbSet<MemoryEntry> MemoryEntries => Set<MemoryEntry>();
-    public DbSet<CoupleEvent> CoupleEvents => Set<CoupleEvent>();
-    public DbSet<MoodEntry> MoodEntries => Set<MoodEntry>();
-    public DbSet<DailyQuestion> DailyQuestions => Set<DailyQuestion>();
-    public DbSet<DailyQuestionAnswer> DailyQuestionAnswers => Set<DailyQuestionAnswer>();
-    public DbSet<WeeklyCheckIn> WeeklyCheckIns => Set<WeeklyCheckIn>();
-    public DbSet<ChallengeTemplate> ChallengeTemplates => Set<ChallengeTemplate>();
-    public DbSet<CoupleChallenge> CoupleChallenges => Set<CoupleChallenge>();
-    public DbSet<ChallengeProgress> ChallengeProgresses => Set<ChallengeProgress>();
-    public DbSet<TimeCapsule> TimeCapsules => Set<TimeCapsule>();
-    public DbSet<SecretMessage> SecretMessages => Set<SecretMessage>();
-    public DbSet<LoveMapPoint> LoveMapPoints => Set<LoveMapPoint>();
-    public DbSet<CoupleTodo> CoupleTodos => Set<CoupleTodo>();
-    public DbSet<FinanceRecord> FinanceRecords => Set<FinanceRecord>();
-    public DbSet<FinanceGoal> FinanceGoals => Set<FinanceGoal>();
-    public DbSet<AttachmentTestResult> AttachmentTestResults => Set<AttachmentTestResult>();
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Couple> Couples { get; set; }
+        public DbSet<Gendre> Gendres { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<MemoryEntry> MemoryEntries { get; set; }
+        public DbSet<CoupleEvent> CoupleEvents { get; set; }
+        public DbSet<MoodEntry> MoodEntries { get; set; }
+        public DbSet<DailyQuestion> DailyQuestions { get; set; }
+        public DbSet<DailyQuestionAnswer> DailyQuestionAnswers { get; set; }
+        public DbSet<WeeklyCheckIn> WeeklyCheckIns { get; set; }
+        public DbSet<ChallengeTemplate> ChallengeTemplates { get; set; }
+        public DbSet<CoupleChallenge> CoupleChallenges { get; set; }
+        public DbSet<ChallengeProgress> ChallengeProgresses { get; set; }
+        public DbSet<TimeCapsule> TimeCapsules { get; set; }
+        public DbSet<SecretMessage> SecretMessages { get; set; }
+        public DbSet<LoveMapPoint> LoveMapPoints { get; set; }
+        public DbSet<CoupleTodo> CoupleTodos { get; set; }
+        public DbSet<FinanceRecord> FinanceRecords { get; set; }
+        public DbSet<FinanceGoal> FinanceGoals { get; set; }
+        public DbSet<AttachmentTestResult> AttachmentTestResults { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,4 +59,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<DailyQuestionAnswer>().HasIndex(x => new { x.QuestionId, x.UserId }).IsUnique();
         modelBuilder.Entity<ChallengeProgress>().HasIndex(x => new { x.CoupleChallengeId, x.Day }).IsUnique();
     }
+}
 }

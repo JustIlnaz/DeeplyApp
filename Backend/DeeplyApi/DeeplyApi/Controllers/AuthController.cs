@@ -10,7 +10,7 @@ namespace DeeplyApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _service;
-
+    
     public AuthController(IAuthService service)
     {
         _service = service;
