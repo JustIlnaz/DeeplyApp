@@ -5,20 +5,228 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace DeeplyApi.Controllers;
 
-[Route("api/features")]
 [ApiController]
-public class FeaturesController(IFeatureService service) : ControllerBase
+[Route("api/[controller]")]
+public class FeaturesController : ControllerBase
 {
-    private ActionResult UnauthorizedResponse() => Unauthorized(new { message = "Unauthorized" });
+    private readonly IFeatureService _service;
 
-    private Task<ActionResult> ExecuteAuthorized(Func<int, Task<ActionResult>> action)
+    public FeaturesController(IFeatureService service)
     {
-        if (!TryUser(out var userId))
-            return Task.FromResult<ActionResult>(UnauthorizedResponse());
-        return action(userId);
+        _service = service;
     }
 
-    private bool TryUser(out int userId)
+    [HttpPost]
+    [Route("memories")]
+    public async Task<IActionResult> AddMemory(CreateMemoryRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddMemory(userId, request));
+    }
+
+    [HttpGet]
+    [Route("memories")]
+    public async Task<IActionResult> GetMemories([FromQuery] DateOnly? day = null)
+    {
+        return await ExecuteAuthorized(userId => _service.GetMemories(userId, day));
+    }
+
+    [HttpDelete]
+    [Route("memories/{id:int}")]
+    public async Task<IActionResult> DeleteMemory(int id)
+    {
+        return await ExecuteAuthorized(userId => _service.DeleteMemory(userId, id));
+    }
+
+    [HttpPost]
+    [Route("calendar/events")]
+    public async Task<IActionResult> CreateEvent(CreateEventRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.CreateEvent(userId, request));
+    }
+
+    [HttpGet]
+    [Route("calendar/events")]
+    public async Task<IActionResult> GetEvents()
+    {
+        return await ExecuteAuthorized(_service.GetEvents);
+    }
+
+    [HttpPost]
+    [Route("mood")]
+    public async Task<IActionResult> AddMood(CreateMoodRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddMood(userId, request));
+    }
+
+    [HttpGet]
+    [Route("mood/weekly")]
+    public async Task<IActionResult> WeeklyMood()
+    {
+        return await ExecuteAuthorized(_service.WeeklyMood);
+    }
+
+    [HttpGet]
+    [Route("question/today")]
+    public async Task<IActionResult> GetQuestionToday()
+    {
+        return await _service.GetQuestionToday();
+    }
+
+    [HttpPost]
+    [Route("question/{questionId:int}/answer")]
+    public async Task<IActionResult> AnswerQuestion(int questionId, AnswerQuestionRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AnswerQuestion(userId, questionId, request));
+    }
+
+    [HttpPost]
+    [Route("checkin/weekly")]
+    public async Task<IActionResult> AddCheckIn(WeeklyCheckInRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddCheckIn(userId, request));
+    }
+
+    [HttpGet]
+    [Route("challenges/templates")]
+    public async Task<IActionResult> ChallengeTemplates()
+    {
+        return await _service.ChallengeTemplates();
+    }
+
+    [HttpPost]
+    [Route("challenges/{templateId:int}/start")]
+    public async Task<IActionResult> StartChallenge(int templateId)
+    {
+        return await ExecuteAuthorized(userId => _service.StartChallenge(userId, templateId));
+    }
+
+    [HttpPost]
+    [Route("challenges/{challengeId:int}/days/{day}/done")]
+    public async Task<IActionResult> MarkChallengeDay(int challengeId, DateOnly day)
+    {
+        return await ExecuteAuthorized(userId => _service.MarkChallengeDay(userId, challengeId, day));
+    }
+
+    [HttpPost]
+    [Route("challenges/{challengeId:int}/complete")]
+    public async Task<IActionResult> CompleteChallenge(int challengeId)
+    {
+        return await ExecuteAuthorized(userId => _service.CompleteChallenge(userId, challengeId));
+    }
+
+    [HttpPost]
+    [Route("time-capsules")]
+    public async Task<IActionResult> CreateCapsule(CreateTimeCapsuleRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.CreateCapsule(userId, request));
+    }
+
+    [HttpGet]
+    [Route("time-capsules/opened")]
+    public async Task<IActionResult> GetOpenedCapsules()
+    {
+        return await ExecuteAuthorized(_service.GetOpenedCapsules);
+    }
+
+    [HttpPost]
+    [Route("secret-messages")]
+    public async Task<IActionResult> CreateSecret(CreateSecretMessageRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.CreateSecret(userId, request));
+    }
+
+    [HttpGet]
+    [Route("secret-messages")]
+    public async Task<IActionResult> OpenedSecrets()
+    {
+        return await ExecuteAuthorized(_service.OpenedSecrets);
+    }
+
+    [HttpPost]
+    [Route("love-map/points")]
+    public async Task<IActionResult> AddLovePoint(CreateLovePointRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddLovePoint(userId, request));
+    }
+
+    [HttpGet]
+    [Route("love-map/points")]
+    public async Task<IActionResult> GetLovePoints()
+    {
+        return await ExecuteAuthorized(_service.GetLovePoints);
+    }
+
+    [HttpPost]
+    [Route("todos")]
+    public async Task<IActionResult> CreateTodo(CreateTodoRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.CreateTodo(userId, request));
+    }
+
+    [HttpPatch]
+    [Route("todos/{id:int}/status")]
+    public async Task<IActionResult> UpdateTodoStatus(int id, UpdateTodoStatusRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.UpdateTodoStatus(userId, id, request));
+    }
+
+    [HttpGet]
+    [Route("todos")]
+    public async Task<IActionResult> GetTodos()
+    {
+        return await ExecuteAuthorized(_service.GetTodos);
+    }
+
+    [HttpPost]
+    [Route("finance/records")]
+    public async Task<IActionResult> AddFinanceRecord(CreateFinanceRecordRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddFinanceRecord(userId, request));
+    }
+
+    [HttpGet]
+    [Route("finance/summary")]
+    public async Task<IActionResult> FinanceSummary()
+    {
+        return await ExecuteAuthorized(_service.FinanceSummary);
+    }
+
+    [HttpPost]
+    [Route("finance/goals")]
+    public async Task<IActionResult> AddGoal(CreateFinanceGoalRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AddGoal(userId, request));
+    }
+
+    [HttpPost]
+    [Route("attachment-test")]
+    public async Task<IActionResult> AttachmentTest(AttachmentTestRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.AttachmentTest(userId, request));
+    }
+
+    [HttpGet]
+    [Route("closeness-index")]
+    public async Task<IActionResult> ClosenessIndex()
+    {
+        return await ExecuteAuthorized(_service.ClosenessIndex);
+    }
+
+    private async Task<IActionResult> ExecuteAuthorized(Func<int, Task<ActionResult>> action)
+    {
+        if (!TryResolveUserId(out var userId))
+            return Unauthorized(new { message = "Unauthorized" });
+        return await action(userId);
+    }
+
+    private async Task<IActionResult> ExecuteAuthorized(Func<Task<ActionResult>> action)
+    {
+        if (!TryResolveUserId(out _))
+            return Unauthorized(new { message = "Unauthorized" });
+        return await action();
+    }
+
+    private bool TryResolveUserId(out int userId)
     {
         userId = 0;
         var header = HttpContext.Request.Headers.Authorization.ToString();
@@ -36,33 +244,4 @@ public class FeaturesController(IFeatureService service) : ControllerBase
             return false;
         }
     }
-
-    [HttpPost("memories")] public Task<ActionResult> AddMemory(CreateMemoryRequest request) => ExecuteAuthorized(userId => service.AddMemory(userId, request));
-    [HttpGet("memories")] public Task<ActionResult> GetMemories([FromQuery] DateOnly? day = null) => ExecuteAuthorized(userId => service.GetMemories(userId, day));
-    [HttpDelete("memories/{id:int}")] public Task<ActionResult> DeleteMemory(int id) => ExecuteAuthorized(userId => service.DeleteMemory(userId, id));
-    [HttpPost("calendar/events")] public Task<ActionResult> CreateEvent(CreateEventRequest request) => ExecuteAuthorized(userId => service.CreateEvent(userId, request));
-    [HttpGet("calendar/events")] public Task<ActionResult> GetEvents() => ExecuteAuthorized(service.GetEvents);
-    [HttpPost("mood")] public Task<ActionResult> AddMood(CreateMoodRequest request) => ExecuteAuthorized(userId => service.AddMood(userId, request));
-    [HttpGet("mood/weekly")] public Task<ActionResult> WeeklyMood() => ExecuteAuthorized(service.WeeklyMood);
-    [HttpGet("question/today")] public Task<ActionResult> GetQuestionToday() => service.GetQuestionToday();
-    [HttpPost("question/{questionId:int}/answer")] public Task<ActionResult> AnswerQuestion(int questionId, AnswerQuestionRequest request) => ExecuteAuthorized(userId => service.AnswerQuestion(userId, questionId, request));
-    [HttpPost("checkin/weekly")] public Task<ActionResult> AddCheckIn(WeeklyCheckInRequest request) => ExecuteAuthorized(userId => service.AddCheckIn(userId, request));
-    [HttpGet("challenges/templates")] public Task<ActionResult> ChallengeTemplates() => service.ChallengeTemplates();
-    [HttpPost("challenges/{templateId:int}/start")] public Task<ActionResult> StartChallenge(int templateId) => ExecuteAuthorized(userId => service.StartChallenge(userId, templateId));
-    [HttpPost("challenges/{challengeId:int}/days/{day}/done")] public Task<ActionResult> MarkChallengeDay(int challengeId, DateOnly day) => ExecuteAuthorized(userId => service.MarkChallengeDay(userId, challengeId, day));
-    [HttpPost("challenges/{challengeId:int}/complete")] public Task<ActionResult> CompleteChallenge(int challengeId) => ExecuteAuthorized(userId => service.CompleteChallenge(userId, challengeId));
-    [HttpPost("time-capsules")] public Task<ActionResult> CreateCapsule(CreateTimeCapsuleRequest request) => ExecuteAuthorized(userId => service.CreateCapsule(userId, request));
-    [HttpGet("time-capsules/opened")] public Task<ActionResult> GetOpenedCapsules() => ExecuteAuthorized(service.GetOpenedCapsules);
-    [HttpPost("secret-messages")] public Task<ActionResult> CreateSecret(CreateSecretMessageRequest request) => ExecuteAuthorized(userId => service.CreateSecret(userId, request));
-    [HttpGet("secret-messages")] public Task<ActionResult> OpenedSecrets() => ExecuteAuthorized(service.OpenedSecrets);
-    [HttpPost("love-map/points")] public Task<ActionResult> AddLovePoint(CreateLovePointRequest request) => ExecuteAuthorized(userId => service.AddLovePoint(userId, request));
-    [HttpGet("love-map/points")] public Task<ActionResult> GetLovePoints() => ExecuteAuthorized(service.GetLovePoints);
-    [HttpPost("todos")] public Task<ActionResult> CreateTodo(CreateTodoRequest request) => ExecuteAuthorized(userId => service.CreateTodo(userId, request));
-    [HttpPatch("todos/{id:int}/status")] public Task<ActionResult> UpdateTodoStatus(int id, UpdateTodoStatusRequest request) => ExecuteAuthorized(userId => service.UpdateTodoStatus(userId, id, request));
-    [HttpGet("todos")] public Task<ActionResult> GetTodos() => ExecuteAuthorized(service.GetTodos);
-    [HttpPost("finance/records")] public Task<ActionResult> AddFinanceRecord(CreateFinanceRecordRequest request) => ExecuteAuthorized(userId => service.AddFinanceRecord(userId, request));
-    [HttpGet("finance/summary")] public Task<ActionResult> FinanceSummary() => ExecuteAuthorized(service.FinanceSummary);
-    [HttpPost("finance/goals")] public Task<ActionResult> AddGoal(CreateFinanceGoalRequest request) => ExecuteAuthorized(userId => service.AddGoal(userId, request));
-    [HttpPost("attachment-test")] public Task<ActionResult> AttachmentTest(AttachmentTestRequest request) => ExecuteAuthorized(userId => service.AttachmentTest(userId, request));
-    [HttpGet("closeness-index")] public Task<ActionResult> ClosenessIndex() => ExecuteAuthorized(service.ClosenessIndex);
 }

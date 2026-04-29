@@ -5,15 +5,35 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeeplyApi.Controllers;
 
-[Route("api/auth")]
-public class AuthController(IAuthService service) : ControllerBase
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [HttpPost("register")]
-    public Task<ActionResult> Register([FromBody] RegisterRequest request) => service.Register(request);
+    private readonly IAuthService _service;
 
-    [HttpPost("login")]
-    public Task<ActionResult> Login([FromBody] LoginRequest request) => service.Login(request);
+    public AuthController(IAuthService service)
+    {
+        _service = service;
+    }
 
-    [HttpPost("refresh")]
-    public Task<ActionResult> Refresh([FromBody] RefreshRequest request) => service.Refresh(request);
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        return await _service.Register(request);
+    }
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        return await _service.Login(request);
+    }
+
+    [HttpPost]
+    [Route("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+    {
+        return await _service.Refresh(request);
+    }
 }

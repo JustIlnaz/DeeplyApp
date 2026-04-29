@@ -5,31 +5,43 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace DeeplyApi.Controllers;
 
-[Route("api/chat")]
-public class ChatController(IChatService service) : ControllerBase
+[ApiController]
+[Route("api/[controller]")]
+public class ChatController : ControllerBase
 {
-    [HttpGet("history")]
-    public Task<ActionResult> History([FromQuery] int take = 50)
+    private readonly IChatService _service;
+
+    public ChatController(IChatService service)
     {
-        if (!TryResolveUserId(out var userId))
-            return Task.FromResult<ActionResult>(Unauthorized(new { message = "Unauthorized" }));
-        return service.History(userId, take);
+        _service = service;
     }
 
-    [HttpPost("send")]
-    public Task<ActionResult> Send([FromBody] CreateChatMessageRequest request)
+    [HttpGet]
+    [Route("history")]
+    public async Task<IActionResult> History([FromQuery] int take = 50)
     {
-        if (!TryResolveUserId(out var userId))
-            return Task.FromResult<ActionResult>(Unauthorized(new { message = "Unauthorized" }));
-        return service.Send(userId, request);
+        return await ExecuteAuthorized(userId => _service.History(userId, take));
     }
 
-    [HttpPost("{messageId:int}/read")]
-    public Task<ActionResult> MarkRead(int messageId)
+    [HttpPost]
+    [Route("send")]
+    public async Task<IActionResult> Send([FromBody] CreateChatMessageRequest request)
+    {
+        return await ExecuteAuthorized(userId => _service.Send(userId, request));
+    }
+
+    [HttpPost]
+    [Route("{messageId:int}/read")]
+    public async Task<IActionResult> MarkRead(int messageId)
+    {
+        return await ExecuteAuthorized(userId => _service.MarkRead(userId, messageId));
+    }
+
+    private async Task<IActionResult> ExecuteAuthorized(Func<int, Task<ActionResult>> action)
     {
         if (!TryResolveUserId(out var userId))
-            return Task.FromResult<ActionResult>(Unauthorized(new { message = "Unauthorized" }));
-        return service.MarkRead(userId, messageId);
+            return Unauthorized(new { message = "Unauthorized" });
+        return await action(userId);
     }
 
     private bool TryResolveUserId(out int userId)
