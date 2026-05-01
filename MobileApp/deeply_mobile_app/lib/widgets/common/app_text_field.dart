@@ -30,7 +30,7 @@ class _AppTextFieldState extends State<AppTextField> {
       decoration: BoxDecoration(
         color: AppColors.bgInput,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.07)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
       child: TextField(
         controller: widget.controller,
@@ -41,14 +41,19 @@ class _AppTextFieldState extends State<AppTextField> {
           hintText: widget.hint,
           hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 15),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           prefixIcon: widget.prefixIcon != null
               ? Icon(widget.prefixIcon, color: AppColors.textHint, size: 18)
               : null,
           suffixIcon: widget.isPassword
               ? IconButton(
                   icon: Icon(
-                    _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                     color: AppColors.textHint,
                     size: 18,
                   ),

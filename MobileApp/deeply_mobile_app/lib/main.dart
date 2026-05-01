@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/auth/loading_screen.dart';
 
 void main() {
-  runApp(const DeeplyApp());
+  runApp(const ProviderScope(child: DeeplyApp()));
 }
 
 class DeeplyApp extends StatelessWidget {

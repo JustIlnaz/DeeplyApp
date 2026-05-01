@@ -15,7 +15,11 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
   final String _hoursValue = '24 часа';
 
   final List<Map<String, dynamic>> _pending = [
-    {'title': 'Сообщение для Насти', 'timer': '18:42:10', 'color': Color(0xFFD63AF5)},
+    {
+      'title': 'Сообщение для Насти',
+      'timer': '18:42:10',
+      'color': Color(0xFFD63AF5),
+    },
   ];
 
   @override
@@ -37,7 +41,11 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
         ),
         title: const Text(
           'Тайные сообщения',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -54,16 +62,24 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.bgCard,
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
-                child: const Center(child: Text('🤫', style: TextStyle(fontSize: 38))),
+                child: const Center(
+                  child: Text('🤫', style: TextStyle(fontSize: 38)),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             const Center(
               child: Text(
                 'Сообщение с таймером',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             Center(
@@ -77,7 +93,11 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
 
             const Text(
               'Твоё послание',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 10),
             Container(
@@ -103,7 +123,11 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
 
             const Text(
               'Способ открытия',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 10),
             Row(
@@ -115,7 +139,9 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        gradient: _openMode == 'hours' ? AppColors.primaryGradient : null,
+                        gradient: _openMode == 'hours'
+                            ? AppColors.primaryGradient
+                            : null,
                         color: _openMode == 'hours' ? null : AppColors.bgCard,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -129,7 +155,9 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                           Text(
                             '● Через часы',
                             style: TextStyle(
-                              color: _openMode == 'hours' ? Colors.white : AppColors.textSecondary,
+                              color: _openMode == 'hours'
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -138,7 +166,7 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                             'напр. через 24ч',
                             style: TextStyle(
                               color: _openMode == 'hours'
-                                  ? Colors.white.withOpacity(0.7)
+                                  ? Colors.white.withValues(alpha: 0.7)
                                   : AppColors.textHint,
                               fontSize: 11,
                             ),
@@ -156,7 +184,9 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: _openMode == 'date' ? AppColors.bgCard : AppColors.bgCard,
+                        color: _openMode == 'date'
+                            ? AppColors.bgCard
+                            : AppColors.bgCard,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: _openMode == 'date'
@@ -170,14 +200,19 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                           Text(
                             '📅 По дате',
                             style: TextStyle(
-                              color: _openMode == 'date' ? AppColors.primary : AppColors.textSecondary,
+                              color: _openMode == 'date'
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
                             'выбрать дату',
-                            style: TextStyle(color: AppColors.textHint, fontSize: 11),
+                            style: TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -192,7 +227,11 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
             if (_openMode == 'hours') ...[
               const Text(
                 'Открыть через',
-                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 10),
               Container(
@@ -204,14 +243,22 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time_outlined, color: AppColors.primary, size: 18),
+                    const Icon(
+                      Icons.access_time_outlined,
+                      color: AppColors.primary,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       _hoursValue,
                       style: const TextStyle(color: Colors.white, fontSize: 14),
                     ),
                     const Spacer(),
-                    const Icon(Icons.arrow_forward_ios, color: AppColors.textHint, size: 14),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      color: AppColors.textHint,
+                      size: 14,
+                    ),
                   ],
                 ),
               ),
@@ -221,46 +268,58 @@ class _SecretMessageScreenState extends State<SecretMessageScreen> {
 
             const Text(
               'Ожидающие сообщения',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 10),
-            ..._pending.map((p) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.bgCard,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
-              ),
-              child: Row(
-                children: [
-                  const Text('🤫', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      p['title'],
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: (p['color'] as Color).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      p['timer'],
-                      style: TextStyle(
-                        color: p['color'],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+            ..._pending.map(
+              (p) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.bgCard,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                ),
+                child: Row(
+                  children: [
+                    const Text('🤫', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        p['title'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (p['color'] as Color).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        p['timer'],
+                        style: TextStyle(
+                          color: p['color'],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
 
             const SizedBox(height: 24),
             AppButton(text: 'Отправить послание 💌', onPressed: () {}),

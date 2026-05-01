@@ -32,7 +32,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
         ),
         title: const Text(
           'Вопрос дня',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -46,9 +50,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF9800).withOpacity(0.15),
+                color: const Color(0xFFFF9800).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFFF9800).withOpacity(0.4)),
+                border: Border.all(
+                  color: const Color(0xFFFF9800).withValues(alpha: 0.4),
+                ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -100,9 +106,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -119,7 +128,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
             // My answer
             const Text(
               'Твой ответ',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 10),
             Container(
@@ -133,7 +146,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         _answerController.text,
-                        style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
                       ),
                     )
                   : TextField(
@@ -142,7 +159,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       maxLines: 4,
                       decoration: const InputDecoration(
                         hintText: 'Наш первый поход в горы...',
-                        hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
+                        hintStyle: TextStyle(
+                          color: AppColors.textHint,
+                          fontSize: 14,
+                        ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.all(16),
                       ),
@@ -154,7 +174,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
             // Partner's answer
             const Text(
               'Ответ Насти',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 10),
             Container(
@@ -168,15 +192,26 @@ class _QuestionScreenState extends State<QuestionScreen> {
               child: _answered
                   ? const Text(
                       'Тогда ты улыбнулась на закате и я понял что влюблён.',
-                      style: TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
                     )
                   : Column(
                       children: [
-                        const Icon(Icons.lock_outline, color: AppColors.textHint, size: 32),
+                        const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.textHint,
+                          size: 32,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Появится после вашего ответа',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
                         ),
                       ],
                     ),

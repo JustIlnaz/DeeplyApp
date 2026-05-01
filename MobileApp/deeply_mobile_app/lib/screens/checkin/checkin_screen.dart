@@ -35,7 +35,11 @@ class _CheckinScreenState extends State<CheckinScreen> {
         ),
         title: const Text(
           'Еженедельный чек-ин',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -81,7 +85,9 @@ class _CheckinScreenState extends State<CheckinScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1A3A1A),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.3)),
+                border: Border.all(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 children: [
@@ -137,7 +143,7 @@ class _CheckinScreenState extends State<CheckinScreen> {
           decoration: BoxDecoration(
             color: AppColors.bgCard,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withOpacity(0.07)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
           ),
           child: TextField(
             controller: controller,
@@ -145,7 +151,10 @@ class _CheckinScreenState extends State<CheckinScreen> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 14),
+              hintStyle: const TextStyle(
+                color: AppColors.textHint,
+                fontSize: 14,
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(14),
             ),

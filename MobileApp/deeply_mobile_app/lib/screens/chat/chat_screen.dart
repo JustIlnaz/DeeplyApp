@@ -27,9 +27,21 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scrollController = ScrollController();
 
   final List<ChatMessage> _messages = [
-    const ChatMessage(text: 'Привет, солнышко! Как день? ✨', isMe: false, time: '14:22'),
-    const ChatMessage(text: 'Отлично! Закончил проект 🎉\nИду домой через час', isMe: true, time: '14:40'),
-    const ChatMessage(text: 'Ура! Так рада ❤️\nГотовлю суп 🍲', isMe: false, time: '14:47'),
+    const ChatMessage(
+      text: 'Привет, солнышко! Как день? ✨',
+      isMe: false,
+      time: '14:22',
+    ),
+    const ChatMessage(
+      text: 'Отлично! Закончил проект 🎉\nИду домой через час',
+      isMe: true,
+      time: '14:40',
+    ),
+    const ChatMessage(
+      text: 'Ура! Так рада ❤️\nГотовлю суп 🍲',
+      isMe: false,
+      time: '14:47',
+    ),
     const ChatMessage(text: 'Ты лучшая! Обнимаю 🤗', isMe: true, time: '14:53'),
     const ChatMessage(text: '', isMe: false, time: '15:10', isImage: true),
     const ChatMessage(text: 'Наш закат в горах ⛰', isMe: false, time: '15:10'),
@@ -39,11 +51,14 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
     setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isMe: true,
-        time: '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-      ));
+      _messages.add(
+        ChatMessage(
+          text: text,
+          isMe: true,
+          time:
+              '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
+        ),
+      );
     });
     _messageController.clear();
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -83,7 +98,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 gradient: AppColors.primaryGradient,
               ),
               child: const Center(
-                child: Text('Л', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Л',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -92,7 +113,11 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 const Text(
                   'Любовь',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Text(
                   'онлайн',
@@ -129,9 +154,13 @@ class _ChatScreenState extends State<ChatScreen> {
       alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.72,
+        ),
         child: Column(
-          crossAxisAlignment: msg.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: msg.isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             if (msg.isImage)
               Container(
@@ -141,13 +170,22 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.bgCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
-                child: const Icon(Icons.image, color: AppColors.textHint, size: 40),
+                child: const Icon(
+                  Icons.image,
+                  color: AppColors.textHint,
+                  size: 40,
+                ),
               )
             else
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: msg.isMe ? AppColors.primary : AppColors.bgCard,
                   borderRadius: BorderRadius.only(
@@ -159,7 +197,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 child: Text(
                   msg.text,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
                 ),
               ),
             const SizedBox(height: 2),
@@ -178,7 +220,9 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
       decoration: BoxDecoration(
         color: AppColors.bgDark,
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.07))),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.07)),
+        ),
       ),
       child: Row(
         children: [
@@ -187,7 +231,7 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgCard,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.07)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
               ),
               child: TextField(
                 controller: _messageController,
@@ -196,7 +240,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   hintText: 'Написать...',
                   hintStyle: TextStyle(color: AppColors.textHint),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
@@ -212,13 +259,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 gradient: AppColors.primaryGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.4),
+                    color: AppColors.primary.withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -240,7 +291,10 @@ class _DateDivider extends StatelessWidget {
           Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(label, style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+            child: Text(
+              label,
+              style: TextStyle(color: AppColors.textHint, fontSize: 12),
+            ),
           ),
           Expanded(child: Divider(color: Colors.white.withOpacity(0.1))),
         ],

@@ -75,7 +75,11 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
         ),
         title: const Text(
           'Лента воспоминаний',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           IconButton(
@@ -106,20 +110,29 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.primary : AppColors.bgCard,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: selected ? AppColors.primary : Colors.white.withOpacity(0.1),
+                        color: selected
+                            ? AppColors.primary
+                            : Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Text(
                       f,
                       style: TextStyle(
-                        color: selected ? Colors.white : AppColors.textSecondary,
+                        color: selected
+                            ? Colors.white
+                            : AppColors.textSecondary,
                         fontSize: 13,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: selected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -154,7 +167,7 @@ class _MemoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -162,10 +175,12 @@ class _MemoryCard extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: memory.color.withOpacity(0.2),
+              color: memory.color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(child: Text(memory.emoji, style: const TextStyle(fontSize: 26))),
+            child: Center(
+              child: Text(memory.emoji, style: const TextStyle(fontSize: 26)),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -185,14 +200,20 @@ class _MemoryCard extends StatelessWidget {
                     if (memory.tag != null) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withOpacity(0.2),
+                          color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           memory.tag!,
-                          style: const TextStyle(color: Color(0xFF4CAF50), fontSize: 10),
+                          style: const TextStyle(
+                            color: Color(0xFF4CAF50),
+                            fontSize: 10,
+                          ),
                         ),
                       ),
                     ],
@@ -201,7 +222,10 @@ class _MemoryCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   memory.date,
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(

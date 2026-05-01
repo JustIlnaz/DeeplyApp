@@ -42,10 +42,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Text(
               'Понедельник, апрель 13',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 4),
             const Row(
@@ -97,7 +94,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -112,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   'Индекс близости',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontSize: 13,
                   ),
                 ),
@@ -130,20 +127,26 @@ class HomeScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: 0.78,
-                    backgroundColor: Colors.white.withOpacity(0.15),
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                     minHeight: 6,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.arrow_upward, color: Color(0xFF4CAF50), size: 14),
+                    const Icon(
+                      Icons.arrow_upward,
+                      color: Color(0xFF4CAF50),
+                      size: 14,
+                    ),
                     const SizedBox(width: 2),
                     Text(
                       '+5% с прошлой недели',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12,
                       ),
                     ),
@@ -157,9 +160,13 @@ class HomeScreen extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
             ),
-            child: const Icon(Icons.favorite, color: AppColors.primary, size: 26),
+            child: const Icon(
+              Icons.favorite,
+              color: AppColors.primary,
+              size: 26,
+            ),
           ),
         ],
       ),
@@ -238,10 +245,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'Вопрос дня · Серия 12',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
             ],
           ),
@@ -314,10 +318,12 @@ class HomeScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: moods
-                .map((m) => GestureDetector(
-                      onTap: () {},
-                      child: Text(m, style: const TextStyle(fontSize: 28)),
-                    ))
+                .map(
+                  (m) => GestureDetector(
+                    onTap: () {},
+                    child: Text(m, style: const TextStyle(fontSize: 28)),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -339,7 +345,7 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgCard,
         border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.07)),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.07)),
         ),
       ),
       child: Row(
