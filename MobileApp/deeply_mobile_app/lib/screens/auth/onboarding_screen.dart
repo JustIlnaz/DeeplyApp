@@ -21,9 +21,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -40,8 +41,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _goToLogin() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const LoginScreen(),
-        transitionsBuilder: (_, anim, __, child) =>
+        pageBuilder: (_, a, b) => const LoginScreen(),
+        transitionsBuilder: (_, anim, b, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 500),
       ),
@@ -110,14 +111,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Продолжить',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
                             GestureDetector(
                               onTap: _goToLogin,
                               child: Container(
@@ -128,11 +121,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   gradient: const LinearGradient(
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
-                                    colors: [Color(0xFFB44FE8), Color(0xFFD63AF5)],
+                                    colors: [
+                                      Color(0xFFB44FE8),
+                                      Color(0xFFD63AF5),
+                                    ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFD63AF5).withValues(alpha: 0.5),
+                                      color: const Color(
+                                        0xFFD63AF5,
+                                      ).withValues(alpha: 0.5),
                                       blurRadius: 20,
                                       offset: const Offset(0, 6),
                                     ),
@@ -171,9 +169,12 @@ class _WavePainter extends CustomPainter {
     final path = Path();
     path.moveTo(0, size.height * 0.45);
     path.cubicTo(
-      size.width * 0.25, size.height * 0.1,
-      size.width * 0.75, size.height * 0.35,
-      size.width, size.height * 0.15,
+      size.width * 0.25,
+      size.height * 0.1,
+      size.width * 0.75,
+      size.height * 0.35,
+      size.width,
+      size.height * 0.15,
     );
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);

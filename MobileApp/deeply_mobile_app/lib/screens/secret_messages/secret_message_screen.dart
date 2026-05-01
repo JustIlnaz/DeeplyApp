@@ -12,7 +12,7 @@ class SecretMessageScreen extends StatefulWidget {
 class _SecretMessageScreenState extends State<SecretMessageScreen> {
   final _messageController = TextEditingController();
   String _openMode = 'hours'; // 'hours' or 'date'
-  String _hoursValue = '24 часа';
+  final String _hoursValue = '24 часа';
 
   final List<Map<String, dynamic>> _pending = [
     {'title': 'Сообщение для Насти', 'timer': '18:42:10', 'color': Color(0xFFD63AF5)},
