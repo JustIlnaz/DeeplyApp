@@ -7,11 +7,7 @@ class MoodOption {
   final String label;
   final Color color;
 
-  const MoodOption({
-    required this.emoji,
-    required this.label,
-    required this.color,
-  });
+  const MoodOption({required this.emoji, required this.label, required this.color});
 }
 
 class MoodScreen extends StatefulWidget {
@@ -62,11 +58,7 @@ class _MoodScreenState extends State<MoodScreen> {
         ),
         title: const Text(
           'Трекер настроения',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
       body: SingleChildScrollView(
@@ -77,11 +69,7 @@ class _MoodScreenState extends State<MoodScreen> {
             const SizedBox(height: 8),
             const Text(
               'Как ты себя чувствуешь?',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 24),
 
@@ -104,14 +92,10 @@ class _MoodScreenState extends State<MoodScreen> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
-                      color: selected
-                          ? mood.color.withValues(alpha: 0.25)
-                          : AppColors.bgCard,
+                      color: selected ? mood.color.withValues(alpha: 0.25) : AppColors.bgCard,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: selected
-                            ? mood.color
-                            : Colors.white.withValues(alpha: 0.07),
+                        color: selected ? mood.color : Colors.white.withValues(alpha: 0.07),
                         width: selected ? 2 : 1,
                       ),
                     ),
@@ -123,13 +107,9 @@ class _MoodScreenState extends State<MoodScreen> {
                         Text(
                           mood.label,
                           style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : AppColors.textSecondary,
+                            color: selected ? Colors.white : AppColors.textSecondary,
                             fontSize: 11,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -145,18 +125,14 @@ class _MoodScreenState extends State<MoodScreen> {
             // Comment
             const Text(
               'Комментарий',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
                 color: AppColors.bgCard,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withOpacity(0.07)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
               ),
               child: TextField(
                 controller: _commentController,
@@ -179,17 +155,14 @@ class _MoodScreenState extends State<MoodScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgCard,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.07)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Настроение Девушки',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -209,11 +182,7 @@ class _MoodScreenState extends State<MoodScreen> {
             // Weekly chart
             const Text(
               'График за неделю',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -237,14 +206,9 @@ class _MoodScreenState extends State<MoodScreen> {
                                 begin: Alignment.bottomCenter,
                                 end: Alignment.topCenter,
                                 colors: isToday
-                                    ? [
-                                        AppColors.primary,
-                                        AppColors.primaryLight,
-                                      ]
+                                    ? [AppColors.primary, AppColors.primaryLight]
                                     : [
-                                        AppColors.gradientPurple.withValues(
-                                          alpha: 0.6,
-                                        ),
+                                        AppColors.gradientPurple.withValues(alpha: 0.6),
                                         AppColors.gradientPurple,
                                       ],
                               ),
@@ -257,13 +221,9 @@ class _MoodScreenState extends State<MoodScreen> {
                       Text(
                         _weekDays[i],
                         style: TextStyle(
-                          color: isToday
-                              ? AppColors.primary
-                              : AppColors.textHint,
+                          color: isToday ? AppColors.primary : AppColors.textHint,
                           fontSize: 11,
-                          fontWeight: isToday
-                              ? FontWeight.w700
-                              : FontWeight.normal,
+                          fontWeight: isToday ? FontWeight.w700 : FontWeight.normal,
                         ),
                       ),
                     ],

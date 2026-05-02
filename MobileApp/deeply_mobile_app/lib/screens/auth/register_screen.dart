@@ -30,10 +30,9 @@ class _RegisterScreenState extends State<RegisterScreen>
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
-    _fadeAnim = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
     _controller.forward();
   }
 
@@ -90,11 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.15),
                       ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -110,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   Text(
                     'Заполни информацию ниже',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.75),
                       fontSize: 15,
                     ),
                   ),
@@ -123,10 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                   _label('Имя'),
                   const SizedBox(height: 8),
-                  AppTextField(
-                    hint: 'Topuria',
-                    controller: _firstNameController,
-                  ),
+                  AppTextField(hint: 'Topuria', controller: _firstNameController),
                   const SizedBox(height: 16),
 
                   _label('Почта'),
@@ -255,9 +247,7 @@ class _GenderButton extends StatelessWidget {
           color: selected ? selectedColor : AppColors.bgInput,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected
-                ? selectedColor
-                : Colors.white.withValues(alpha: 0.1),
+            color: selected ? selectedColor : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Center(

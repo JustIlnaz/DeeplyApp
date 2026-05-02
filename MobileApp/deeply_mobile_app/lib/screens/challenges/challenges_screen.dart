@@ -64,11 +64,7 @@ class ChallengesScreen extends StatelessWidget {
         ),
         title: const Text(
           'Челленджи',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
       body: SingleChildScrollView(
@@ -95,10 +91,7 @@ class ChallengesScreen extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
@@ -122,10 +115,7 @@ class ChallengesScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'День 4 из 7',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -146,11 +136,7 @@ class ChallengesScreen extends StatelessWidget {
                         ),
                         child: Center(
                           child: done
-                              ? const Icon(
-                                  Icons.check,
-                                  color: Color(0xFF2D8A40),
-                                  size: 16,
-                                )
+                              ? const Icon(Icons.check, color: Color(0xFF2D8A40), size: 16)
                               : Text(
                                   '${i + 1}',
                                   style: TextStyle(
@@ -170,11 +156,7 @@ class ChallengesScreen extends StatelessWidget {
 
             const Text(
               'Выбрать новый',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
@@ -199,7 +181,7 @@ class _ChallengeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -222,19 +204,13 @@ class _ChallengeCard extends StatelessWidget {
                   children: [
                     Text(
                       '${challenge.days} дней',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: challenge.difficultyColor.withOpacity(0.15),
+                        color: challenge.difficultyColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -261,11 +237,7 @@ class _ChallengeCard extends StatelessWidget {
               ),
               child: const Text(
                 'Начат',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
           ),

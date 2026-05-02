@@ -13,24 +13,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final List<String> _weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
   final List<Map<String, dynamic>> _events = [
-    {
-      'emoji': '💍',
-      'title': 'Годовщина',
-      'date': '14 апреля',
-      'color': Color(0xFFD63AF5),
-    },
-    {
-      'emoji': '🎬',
-      'title': 'Кино вместе',
-      'date': '22 апреля',
-      'color': Color(0xFF5B6AF5),
-    },
-    {
-      'emoji': '🍕',
-      'title': 'Ужин в ресторане',
-      'date': '28 апреля',
-      'color': Color(0xFFFF9800),
-    },
+    {'emoji': '💍', 'title': 'Годовщина', 'date': '14 апреля', 'color': Color(0xFFD63AF5)},
+    {'emoji': '🎬', 'title': 'Кино вместе', 'date': '22 апреля', 'color': Color(0xFF5B6AF5)},
+    {'emoji': '🍕', 'title': 'Ужин в ресторане', 'date': '28 апреля', 'color': Color(0xFFFF9800)},
   ];
 
   // days with events
@@ -49,11 +34,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         title: const Text(
           'Общий календарь',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
@@ -79,32 +60,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 8),
             const Text(
               'Апрель 2026',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
 
             // Week days header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: _weekDays
-                  .map(
-                    (d) => SizedBox(
-                      width: 36,
-                      child: Text(
-                        d,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
+              children: _weekDays.map((d) => SizedBox(
+                width: 36,
+                child: Text(
+                  d,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+              )).toList(),
             ),
             const SizedBox(height: 12),
 
@@ -115,11 +85,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
             const Text(
               'Ближайшие события',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
@@ -149,54 +115,52 @@ class _CalendarScreenState extends State<CalendarScreen> {
       final hasEvent = _eventDays.contains(day);
       final isToday = day == 17;
 
-      cells.add(
-        GestureDetector(
-          onTap: () => setState(() => _selectedDay = day),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              border: isToday && !isSelected
-                  ? Border.all(color: AppColors.primary, width: 1.5)
-                  : null,
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  '$day',
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.85),
-                    fontSize: 14,
-                    fontWeight: isSelected || isToday
-                        ? FontWeight.w700
-                        : FontWeight.normal,
-                  ),
+      cells.add(GestureDetector(
+        onTap: () => setState(() => _selectedDay = day),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            border: isToday && !isSelected
+                ? Border.all(color: AppColors.primary, width: 1.5)
+                : null,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                '$day',
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.85),
+                  fontSize: 14,
+                  fontWeight: isSelected || isToday ? FontWeight.w700 : FontWeight.normal,
                 ),
-                if (hasEvent && !isSelected)
-                  Positioned(
-                    bottom: 4,
-                    child: Container(
-                      width: 4,
-                      height: 4,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary,
-                      ),
+              ),
+              if (hasEvent && !isSelected)
+                Positioned(
+                  bottom: 4,
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
-      );
+      ));
     }
 
-    return Wrap(spacing: 4, runSpacing: 4, children: cells);
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: cells,
+    );
   }
 }
 
@@ -223,9 +187,7 @@ class _EventCard extends StatelessWidget {
               color: (event['color'] as Color).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(
-              child: Text(event['emoji'], style: const TextStyle(fontSize: 20)),
-            ),
+            child: Center(child: Text(event['emoji'], style: const TextStyle(fontSize: 20))),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -234,19 +196,12 @@ class _EventCard extends StatelessWidget {
               children: [
                 Text(
                   event['title'],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   event['date'],
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
             ),

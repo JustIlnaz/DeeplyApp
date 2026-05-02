@@ -30,32 +30,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  cupertino_icons: ^1.0.8
-  
-  # HTTP и сетевые запросы
-  dio: ^5.3.1
-  dio_smart_retry: ^5.0.0
-  
-  # Состояние и провайдеры
-  flutter_riverpod: ^2.4.1
-  riverpod_annotation: ^2.3.2
-  
-  # Логирование
-  logger: ^2.0.1
-  
-  # Локальное хранилище
-  shared_preferences: ^2.2.2
-  
-  # Модели данных
-  json_annotation: ^4.8.1
-  
-  # Утилиты
-  intl: ^0.19.0
-  equatable: ^2.0.5
-  
-  # SignalR для реал-тайм чата
+  dio: ^5.4.0
+  provider: ^6.1.2
+  flutter_secure_storage: ^9.2.2
   signalr_netcore: ^1.3.5
+  flutter_local_notifications: ^17.2.2
+
+
 
 dev_dependencies:
   flutter_test:
@@ -63,7 +44,6 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
   
-  # Генерация кода
   build_runner: ^2.4.6
   json_serializable: ^6.7.1
   riverpod_generator: ^2.3.7

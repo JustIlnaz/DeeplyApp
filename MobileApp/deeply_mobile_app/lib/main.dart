@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/auth/loading_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/couple_provider.dart';
+import 'providers/chat_provider.dart';
+import 'providers/features_provider.dart';
 
 void main() {
-  runApp(const ProviderScope(child: DeeplyApp()));
+  runApp(const DeeplyApp());
 }
 
 class DeeplyApp extends StatelessWidget {
@@ -12,11 +16,19 @@ class DeeplyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Deeply',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      home: const LoadingScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CoupleProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => FeaturesProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Deeply',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark,
+        home: const LoadingScreen(),
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -21,10 +22,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _fadeAnim = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -41,8 +41,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _goToLogin() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, a, b) => const LoginScreen(),
-        transitionsBuilder: (_, anim, b, child) =>
+        pageBuilder: (_, __, ___) => const LoginScreen(),
+        transitionsBuilder: (_, anim, __, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 500),
       ),
@@ -53,22 +53,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1A1060),
-              Color(0xFF3D1580),
-              Color(0xFF8B2FC9),
-              Color(0xFFB44FE8),
-              Color(0xFF0D0B1E),
-            ],
-            stops: [0.0, 0.25, 0.5, 0.65, 1.0],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.splashGradient),
         child: Stack(
           children: [
+            // Wave shape at bottom
             Positioned(
               bottom: 0,
               left: 0,
@@ -78,6 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 painter: _WavePainter(),
               ),
             ),
+            // Content
             SafeArea(
               child: FadeTransition(
                 opacity: _fadeAnim,
@@ -111,6 +100,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            const Text(
+                              'Продолжить',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                             GestureDetector(
                               onTap: _goToLogin,
                               child: Container(
@@ -118,19 +115,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 height: 56,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Color(0xFFB44FE8),
-                                      Color(0xFFD63AF5),
-                                    ],
-                                  ),
+                                  gradient: AppColors.primaryGradient,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(
-                                        0xFFD63AF5,
-                                      ).withValues(alpha: 0.5),
+                                      color: AppColors.primary.withValues(alpha: 0.5),
                                       blurRadius: 20,
                                       offset: const Offset(0, 6),
                                     ),
@@ -169,12 +157,9 @@ class _WavePainter extends CustomPainter {
     final path = Path();
     path.moveTo(0, size.height * 0.45);
     path.cubicTo(
-      size.width * 0.25,
-      size.height * 0.1,
-      size.width * 0.75,
-      size.height * 0.35,
-      size.width,
-      size.height * 0.15,
+      size.width * 0.25, size.height * 0.1,
+      size.width * 0.75, size.height * 0.35,
+      size.width, size.height * 0.15,
     );
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);

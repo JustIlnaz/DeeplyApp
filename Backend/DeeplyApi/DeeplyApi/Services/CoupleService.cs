@@ -1,4 +1,4 @@
-using DeeplyApi.Connection;
+    using DeeplyApi.Connection;
 using DeeplyApi.Requests;
 using DeeplyApi.Interfaces;
 using DeeplyApi.Models;
