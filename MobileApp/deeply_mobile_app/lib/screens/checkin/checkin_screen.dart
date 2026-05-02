@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/features_provider.dart';
+import '../../providers/couple_provider.dart';
 import '../../widgets/common/app_button.dart';
 
 class CheckinScreen extends StatefulWidget {
@@ -13,6 +16,31 @@ class _CheckinScreenState extends State<CheckinScreen> {
   final _goodController = TextEditingController();
   final _tensionController = TextEditingController();
   final _improveController = TextEditingController();
+  bool _isSubmitting = false;
+
+  static const _monthNames = [
+    '',
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FeaturesProvider>().fetchCheckinStatus();
+    });
+  }
 
   @override
   void dispose() {
@@ -20,6 +48,45 @@ class _CheckinScreenState extends State<CheckinScreen> {
     _tensionController.dispose();
     _improveController.dispose();
     super.dispose();
+  }
+
+  String _weekLabel() {
+    final now = DateTime.now();
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final sunday = monday.add(const Duration(days: 6));
+    return 'Неделя ${monday.day} ${_monthNames[monday.month]} — '
+        '${sunday.day} ${_monthNames[sunday.month]}';
+  }
+
+  Future<void> _submit() async {
+    final great = _goodController.text.trim();
+    final tension = _tensionController.text.trim();
+    final improve = _improveController.text.trim();
+    if (great.isEmpty || tension.isEmpty || improve.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Заполните все поля')),
+      );
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    final fp = context.read<FeaturesProvider>();
+    final ok = await fp.submitCheckIn(
+      whatWasGreat: great,
+      whereWasTension: tension,
+      whatToImprove: improve,
+    );
+    if (ok) {
+      await fp.fetchCheckinStatus();
+      if (mounted) {
+        _goodController.clear();
+        _tensionController.clear();
+        _improveController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Чек-ин отправлен! ✅')),
+        );
+      }
+    }
+    if (mounted) setState(() => _isSubmitting = false);
   }
 
   @override
@@ -35,102 +102,148 @@ class _CheckinScreenState extends State<CheckinScreen> {
         ),
         title: const Text(
           'Еженедельный чек-ин',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              'Неделя 15 апреля — 21 апреля',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-            ),
-            const SizedBox(height: 24),
+      body: Consumer2<FeaturesProvider, CoupleProvider>(
+        builder: (context, fp, cp, _) {
+          final partnerName = cp.partnerName ?? 'Партнёр';
+          final alreadySubmitted = fp.myCheckinSubmitted;
 
-            _buildQuestion(
-              emoji: '⭐',
-              question: 'Что было классно?',
-              controller: _goodController,
-              hint: 'Вспомни лучший момент недели...',
-            ),
-            const SizedBox(height: 20),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  _weekLabel(),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 24),
 
-            _buildQuestion(
-              emoji: '⚡',
-              question: 'Где было напряжение?',
-              controller: _tensionController,
-              hint: 'Что было непростым?',
-            ),
-            const SizedBox(height: 20),
+                // Question 1
+                _buildQuestion(
+                  label: '⭐ Что было классно?',
+                  controller: _goodController,
+                  hint: 'Вспомни лучший момент недели...',
+                  enabled: !alreadySubmitted,
+                ),
+                const SizedBox(height: 20),
 
-            _buildQuestion(
-              emoji: '💡',
-              question: 'Что можно улучшить?',
-              controller: _improveController,
-              hint: 'Идеи для следующей недели...',
-            ),
+                // Question 2
+                _buildQuestion(
+                  label: '⚡ Где было напряжение?',
+                  controller: _tensionController,
+                  hint: 'Что было непростым?',
+                  enabled: !alreadySubmitted,
+                ),
+                const SizedBox(height: 20),
 
-            const SizedBox(height: 24),
+                // Question 3
+                _buildQuestion(
+                  label: '💡 Что можно улучшить?',
+                  controller: _improveController,
+                  hint: 'Идеи для следующей недели...',
+                  enabled: !alreadySubmitted,
+                ),
 
-            // Partner status
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A3A1A),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Text('✅', style: TextStyle(fontSize: 16)),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Настя уже заполнила чек-ин',
-                    style: TextStyle(color: Color(0xFF4CAF50), fontSize: 13),
+                const SizedBox(height: 24),
+
+                // Partner status banner
+                if (fp.partnerCheckinSubmitted)
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A3A1A),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: AppColors.accentGreen.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('✅', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '$partnerName уже заполнила чек-ин\nОтветы появятся после твоего',
+                            style: const TextStyle(
+                                color: AppColors.accentGreen, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgCard,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('⏳', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Партнёр ещё не заполнил чек-ин',
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Ответы появятся после твоего',
-              style: TextStyle(color: AppColors.textHint, fontSize: 12),
-            ),
 
-            const SizedBox(height: 28),
-            AppButton(text: 'Отправить чек-ин', onPressed: () {}),
-            const SizedBox(height: 32),
-          ],
-        ),
+                const SizedBox(height: 28),
+
+                // Submit button
+                if (alreadySubmitted)
+                  Opacity(
+                    opacity: 0.5,
+                    child: AppButton(
+                      text: 'Вы уже отправили чек-ин',
+                      onPressed: () {},
+                    ),
+                  )
+                else
+                  AppButton(
+                    text: 'Отправить чек-ин',
+                    isLoading: _isSubmitting,
+                    onPressed: _submit,
+                  ),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildQuestion({
-    required String emoji,
-    required String question,
+    required String label,
     required TextEditingController controller,
     required String hint,
+    required bool enabled,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
-            const SizedBox(width: 8),
-            Text(
-              question,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 10),
         Container(
@@ -141,11 +254,13 @@ class _CheckinScreenState extends State<CheckinScreen> {
           ),
           child: TextField(
             controller: controller,
+            enabled: enabled,
             style: const TextStyle(color: Colors.white, fontSize: 14),
             maxLines: 3,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 14),
+              hintStyle:
+                  const TextStyle(color: AppColors.textHint, fontSize: 14),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(14),
             ),

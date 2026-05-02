@@ -19,6 +19,7 @@ class ChallengeProgressModel {
   final int durationDays;
   final List<String> completedDays;
   final bool isCompleted;
+  final String? startedOn;
 
   ChallengeProgressModel({
     required this.id,
@@ -27,6 +28,7 @@ class ChallengeProgressModel {
     required this.durationDays,
     required this.completedDays,
     required this.isCompleted,
+    this.startedOn,
   });
 
   factory ChallengeProgressModel.fromJson(Map<String, dynamic> j) => ChallengeProgressModel(
@@ -36,5 +38,6 @@ class ChallengeProgressModel {
     durationDays: j['durationDays'] ?? 7,
     completedDays: List<String>.from(j['completedDays'] ?? []),
     isCompleted: j['isCompleted'] ?? false,
+    startedOn: j['startedOn'],
   );
 }

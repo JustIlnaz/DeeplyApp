@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/features_provider.dart';
+import '../../data/models/event_model.dart';
+import '../../widgets/common/app_button.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -9,17 +13,206 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  int _selectedDay = 17;
   final List<String> _weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  late DateTime _currentMonth;
+  int? _selectedDay;
 
-  final List<Map<String, dynamic>> _events = [
-    {'emoji': '💍', 'title': 'Годовщина', 'date': '14 апреля', 'color': Color(0xFFD63AF5)},
-    {'emoji': '🎬', 'title': 'Кино вместе', 'date': '22 апреля', 'color': Color(0xFF5B6AF5)},
-    {'emoji': '🍕', 'title': 'Ужин в ресторане', 'date': '28 апреля', 'color': Color(0xFFFF9800)},
+  static const _monthNames = [
+    '',
+    'Январь',
+    'Февраль',
+    'Март',
+    'Апрель',
+    'Май',
+    'Июнь',
+    'Июль',
+    'Август',
+    'Сентябрь',
+    'Октябрь',
+    'Ноябрь',
+    'Декабрь',
   ];
 
-  // days with events
-  final Set<int> _eventDays = {14, 17, 22, 28};
+  static const _monthNamesGenitive = [
+    '',
+    'января',
+    'февраля',
+    'марта',
+    'апреля',
+    'мая',
+    'июня',
+    'июля',
+    'августа',
+    'сентября',
+    'октября',
+    'ноября',
+    'декабря',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _currentMonth = DateTime(now.year, now.month, 1);
+    _selectedDay = now.day;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FeaturesProvider>().fetchEvents();
+    });
+  }
+
+  int get _daysInMonth =>
+      DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+
+  int get _firstWeekdayOffset => _currentMonth.weekday - 1;
+
+  String get _monthYearLabel =>
+      '${_monthNames[_currentMonth.month]} ${_currentMonth.year}';
+
+  String _formatEventDate(String utcStr) {
+    try {
+      final dt = DateTime.parse(utcStr).toLocal();
+      return '${dt.day} ${_monthNamesGenitive[dt.month]}';
+    } catch (_) {
+      return utcStr;
+    }
+  }
+
+  Set<int> _eventDaysForCurrentMonth(List<EventModel> events) {
+    final result = <int>{};
+    for (final e in events) {
+      try {
+        final dt = DateTime.parse(e.startsAtUtc).toLocal();
+        if (dt.year == _currentMonth.year &&
+            dt.month == _currentMonth.month) {
+          result.add(dt.day);
+        }
+      } catch (_) {}
+    }
+    return result;
+  }
+
+  void _showAddDialog() {
+    final titleCtrl = TextEditingController();
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
+    String dateLabel =
+        '${selectedDate.day} ${_monthNamesGenitive[selectedDate.month]} ${selectedDate.year}';
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              backgroundColor: AppColors.bgCard,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text(
+                'Новое событие',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.bgInput,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: TextField(
+                      controller: titleCtrl,
+                      autofocus: true,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Название события',
+                        hintStyle: TextStyle(color: AppColors.textHint),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.all(14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2035),
+                        builder: (context, child) => Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.dark(
+                                primary: AppColors.primary),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (picked != null) {
+                        setDialogState(() {
+                          selectedDate = picked;
+                          dateLabel =
+                              '${picked.day} ${_monthNamesGenitive[picked.month]} ${picked.year}';
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgInput,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today_outlined,
+                              color: AppColors.primary, size: 18),
+                          const SizedBox(width: 10),
+                          Text(dateLabel,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 14)),
+                          const Spacer(),
+                          const Icon(Icons.arrow_forward_ios,
+                              color: AppColors.textHint, size: 14),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Отмена',
+                      style: TextStyle(color: AppColors.textSecondary)),
+                ),
+                AppButton(
+                  text: 'Создать',
+                  width: 110,
+                  onPressed: () async {
+                    final title = titleCtrl.text.trim();
+                    if (title.isEmpty) return;
+                    Navigator.pop(ctx);
+                    final fp = context.read<FeaturesProvider>();
+                    final scaffoldMsg = ScaffoldMessenger.of(context);
+                    final ok = await fp.createEvent(
+                        title: title, startsAt: selectedDate);
+                    await fp.fetchEvents();
+                    if (ok) {
+                      scaffoldMsg.showSnackBar(
+                        const SnackBar(content: Text('Событие создано! 📅')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,86 +227,122 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         title: const Text(
           'Общий календарь',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
             icon: Container(
               width: 34,
               height: 34,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: AppColors.primaryGradient,
               ),
               child: const Icon(Icons.add, color: Colors.white, size: 20),
             ),
-            onPressed: () {},
+            onPressed: _showAddDialog,
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const Text(
-              'Апрель 2026',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
+      body: Consumer<FeaturesProvider>(
+        builder: (context, fp, _) {
+          final now = DateTime.now();
+          final eventDays = _eventDaysForCurrentMonth(fp.events);
+          final upcoming = fp.events.where((e) {
+            try {
+              return DateTime.parse(e.startsAtUtc).isAfter(now);
+            } catch (_) {
+              return false;
+            }
+          }).toList()
+            ..sort((a, b) => a.startsAtUtc.compareTo(b.startsAtUtc));
 
-            // Week days header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: _weekDays.map((d) => SizedBox(
-                width: 36,
-                child: Text(
-                  d,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          // Show at most top 5 upcoming
+          final topUpcoming = upcoming.take(5).toList();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text(
+                  _monthYearLabel,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600),
                 ),
-              )).toList(),
+                const SizedBox(height: 16),
+
+                // Week days header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: _weekDays
+                      .map((d) => SizedBox(
+                            width: 36,
+                            child: Text(
+                              d,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary, fontSize: 12),
+                            ),
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+
+                _buildCalendarGrid(eventDays, now),
+
+                const SizedBox(height: 28),
+                const Text(
+                  'Ближайшие события',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+
+                if (topUpcoming.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(
+                      'Нет предстоящих событий',
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 14),
+                    ),
+                  )
+                else
+                  ...topUpcoming.map((e) => _EventCard(
+                        event: e,
+                        formattedDate: _formatEventDate(e.startsAtUtc),
+                      )),
+                const SizedBox(height: 32),
+              ],
             ),
-            const SizedBox(height: 12),
-
-            // Calendar grid
-            _buildCalendarGrid(),
-
-            const SizedBox(height: 28),
-
-            const Text(
-              'Ближайшие события',
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-
-            ..._events.map((e) => _EventCard(event: e)),
-            const SizedBox(height: 32),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCalendarGrid() {
-    // April 2026 starts on Wednesday (index 2)
-    const startOffset = 2;
-    const daysInMonth = 30;
-
+  Widget _buildCalendarGrid(Set<int> eventDays, DateTime now) {
     final cells = <Widget>[];
 
-    // Empty cells before start
-    for (int i = 0; i < startOffset; i++) {
+    // Empty leading cells for alignment
+    for (int i = 0; i < _firstWeekdayOffset; i++) {
       cells.add(const SizedBox(width: 36, height: 36));
     }
 
-    // Day cells
-    for (int day = 1; day <= daysInMonth; day++) {
+    for (int day = 1; day <= _daysInMonth; day++) {
       final isSelected = day == _selectedDay;
-      final hasEvent = _eventDays.contains(day);
-      final isToday = day == 17;
+      final hasEvent = eventDays.contains(day);
+      final isToday = now.year == _currentMonth.year &&
+          now.month == _currentMonth.month &&
+          day == now.day;
 
       cells.add(GestureDetector(
         onTap: () => setState(() => _selectedDay = day),
@@ -133,9 +362,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Text(
                 '$day',
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.85),
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.85),
                   fontSize: 14,
-                  fontWeight: isSelected || isToday ? FontWeight.w700 : FontWeight.normal,
+                  fontWeight: isSelected || isToday
+                      ? FontWeight.w700
+                      : FontWeight.normal,
                 ),
               ),
               if (hasEvent && !isSelected)
@@ -156,17 +389,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ));
     }
 
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      children: cells,
-    );
+    return Wrap(spacing: 4, runSpacing: 4, children: cells);
   }
 }
 
+// ── Event Card ─────────────────────────────────────────────────────────────
+
 class _EventCard extends StatelessWidget {
-  final Map<String, dynamic> event;
-  const _EventCard({required this.event});
+  final EventModel event;
+  final String formattedDate;
+
+  const _EventCard({required this.event, required this.formattedDate});
+
+  String get _emoji {
+    final t = event.title.toLowerCase();
+    if (t.contains('годовщин') || t.contains('anniversar')) return '💍';
+    if (t.contains('кино') || t.contains('film')) return '🎬';
+    if (t.contains('ужин') || t.contains('ресторан')) return '🍕';
+    return '📅';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,10 +425,11 @@ class _EventCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: (event['color'] as Color).withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(child: Text(event['emoji'], style: const TextStyle(fontSize: 20))),
+            child:
+                Center(child: Text(_emoji, style: const TextStyle(fontSize: 20))),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -195,13 +437,17 @@ class _EventCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  event['title'],
-                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                  event.title,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  event['date'],
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  formattedDate,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
             ),

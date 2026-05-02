@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../providers/couple_provider.dart';
+import '../../data/models/message_model.dart';
 
-class ChatMessage {
-  final String text;
-  final bool isMe;
-  final String time;
-  final bool isImage;
+// ─── Item type for the flat list (message | date-divider) ─────────────────────
+class _ChatItem {
+  final bool isDivider;
+  final String? dividerLabel;
+  final MessageModel? message;
 
-  const ChatMessage({
-    required this.text,
-    required this.isMe,
-    required this.time,
-    this.isImage = false,
-  });
+  const _ChatItem.divider(String label)
+      : isDivider = true,
+        dividerLabel = label,
+        message = null;
+
+  const _ChatItem.msg(MessageModel m)
+      : isDivider = false,
+        dividerLabel = null,
+        message = m;
 }
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
@@ -25,34 +34,51 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _init());
+  }
 
-  final List<ChatMessage> _messages = [
-    const ChatMessage(text: 'Привет, солнышко! Как день? ✨', isMe: false, time: '14:22'),
-    const ChatMessage(text: 'Отлично! Закончил проект 🎉\nИду домой через час', isMe: true, time: '14:40'),
-    const ChatMessage(text: 'Ура! Так рада ❤️\nГотовлю суп 🍲', isMe: false, time: '14:47'),
-    const ChatMessage(text: 'Ты лучшая! Обнимаю 🤗', isMe: true, time: '14:53'),
-    const ChatMessage(text: '', isMe: false, time: '15:10', isImage: true),
-    const ChatMessage(text: 'Наш закат в горах ⛰', isMe: false, time: '15:10'),
-  ];
+  Future<void> _init() async {
+    if (!mounted) return;
+    // Ensure user profile is loaded
+    final auth = context.read<AuthProvider>();
+    if (auth.userId == null) await auth.fetchProfile();
 
-  void _sendMessage() {
+    // Ensure partner name is loaded
+    if (mounted) {
+      final couple = context.read<CoupleProvider>();
+      if (couple.partnerName == null && auth.userId != null) {
+        await couple.fetchPartnerProfile(auth.userId!);
+      }
+    }
+
+    // Fetch chat history
+    if (mounted) {
+      await context.read<ChatProvider>().fetchHistory();
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
-    setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        isMe: true,
-        time: '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-      ));
-    });
     _messageController.clear();
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    });
+    final ok = await context.read<ChatProvider>().sendMessage(text: text);
+    if (ok) _scrollToBottom();
   }
 
   @override
@@ -62,61 +88,93 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  String _formatTime(String sentAtUtc) {
+    try {
+      final dt = DateTime.parse(sentAtUtc).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:'
+          '${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String _formatDateLabel(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final msgDay = DateTime(dt.year, dt.month, dt.day);
+
+    if (msgDay == today) return 'Сегодня';
+    if (msgDay == yesterday) return 'Вчера';
+    return '${dt.day.toString().padLeft(2, '0')}.'
+        '${dt.month.toString().padLeft(2, '0')}.'
+        '${dt.year}';
+  }
+
+  /// Builds a flat list interleaving date-dividers and message items.
+  List<_ChatItem> _buildItems(List<MessageModel> messages) {
+    final items = <_ChatItem>[];
+    String? lastDateKey;
+
+    for (final msg in messages) {
+      try {
+        final dt = DateTime.parse(msg.sentAtUtc).toLocal();
+        final key = '${dt.year}-${dt.month}-${dt.day}';
+        if (key != lastDateKey) {
+          items.add(_ChatItem.divider(_formatDateLabel(dt)));
+          lastDateKey = key;
+        }
+      } catch (_) {}
+      items.add(_ChatItem.msg(msg));
+    }
+    return items;
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
+    final chat = context.watch<ChatProvider>();
+    final myUserId = context.watch<AuthProvider>().userId;
+    final coupleProvider = context.watch<CoupleProvider>();
+    final partnerName = coupleProvider.partnerName ?? 'Партнёр';
+    final partnerInitial =
+        partnerName.isNotEmpty ? partnerName[0].toUpperCase() : 'П';
+
+    final items = _buildItems(chat.messages);
+
     return Scaffold(
       backgroundColor: AppColors.bgDark,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgDark,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: AppColors.primaryGradient,
-              ),
-              child: const Center(
-                child: Text('Л', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Любовь',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const Text(
-                  'онлайн',
-                  style: TextStyle(color: Color(0xFF4CAF50), fontSize: 12),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      appBar: _buildAppBar(partnerName, partnerInitial),
       body: Column(
         children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _DateDivider(label: 'Сегодня');
-                }
-                return _buildMessage(_messages[index - 1]);
-              },
+          // Loading bar while fetching history
+          if (chat.isLoading && chat.messages.isEmpty)
+            const LinearProgressIndicator(
+              backgroundColor: AppColors.bgCard,
+              color: AppColors.primary,
+              minHeight: 2,
             ),
+          Expanded(
+            child: chat.messages.isEmpty && !chat.isLoading
+                ? _buildEmptyState()
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      if (item.isDivider) {
+                        return _DateDivider(label: item.dividerLabel!);
+                      }
+                      final msg = item.message!;
+                      final isMe = msg.senderUserId == myUserId;
+                      return _buildMessage(msg, isMe);
+                    },
+                  ),
           ),
           _buildInputBar(),
         ],
@@ -124,16 +182,83 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessage(ChatMessage msg) {
+  PreferredSizeWidget _buildAppBar(String partnerName, String partnerInitial) {
+    return AppBar(
+      backgroundColor: AppColors.bgDark,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.primaryGradient,
+            ),
+            child: Center(
+              child: Text(
+                partnerInitial,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                partnerName,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600),
+              ),
+              const Text(
+                'Онлайн',
+                style: TextStyle(color: AppColors.accentGreen, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.chat_bubble_outline,
+              color: AppColors.textHint, size: 48),
+          const SizedBox(height: 12),
+          Text(
+            'Начните разговор',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessage(MessageModel msg, bool isMe) {
     return Align(
-      alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
+        constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.72),
         child: Column(
-          crossAxisAlignment: msg.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            if (msg.isImage)
+            // Photo placeholder
+            if (msg.photoUrl != null)
               Container(
                 width: 180,
                 height: 140,
@@ -141,31 +266,56 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.bgCard,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08)),
                 ),
-                child: const Icon(Icons.image, color: AppColors.textHint, size: 40),
-              )
-            else
+                child: const Icon(Icons.image,
+                    color: AppColors.textHint, size: 40),
+              ),
+            // Text bubble
+            if (msg.text != null && msg.text!.isNotEmpty)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: msg.isMe ? AppColors.primary : AppColors.bgCard,
+                  color: isMe ? AppColors.primary : AppColors.bgCard,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(18),
                     topRight: const Radius.circular(18),
-                    bottomLeft: Radius.circular(msg.isMe ? 18 : 4),
-                    bottomRight: Radius.circular(msg.isMe ? 4 : 18),
+                    bottomLeft: Radius.circular(isMe ? 18 : 4),
+                    bottomRight: Radius.circular(isMe ? 4 : 18),
                   ),
                 ),
                 child: Text(
-                  msg.text,
-                  style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4),
+                  msg.text!,
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 15, height: 1.4),
                 ),
               ),
             const SizedBox(height: 2),
-            Text(
-              msg.time,
-              style: TextStyle(color: AppColors.textHint, fontSize: 11),
+            // Time + read receipt
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _formatTime(msg.sentAtUtc),
+                  style: const TextStyle(
+                      color: AppColors.textHint, fontSize: 11),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 3),
+                  Text(
+                    msg.isRead ? '✓✓' : '✓',
+                    style: TextStyle(
+                      color: msg.isRead
+                          ? AppColors.primary
+                          : AppColors.textHint,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -178,7 +328,8 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
       decoration: BoxDecoration(
         color: AppColors.bgDark,
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.07))),
+        border: Border(
+            top: BorderSide(color: Colors.white.withValues(alpha: 0.07))),
       ),
       child: Row(
         children: [
@@ -187,17 +338,22 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgCard,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.07)),
               ),
               child: TextField(
                 controller: _messageController,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
+                style:
+                    const TextStyle(color: Colors.white, fontSize: 15),
                 decoration: const InputDecoration(
                   hintText: 'Написать...',
                   hintStyle: TextStyle(color: AppColors.textHint),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                      horizontal: 18, vertical: 12),
                 ),
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
               ),
             ),
           ),
@@ -218,7 +374,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+              child: const Icon(Icons.arrow_forward,
+                  color: Colors.white, size: 20),
             ),
           ),
         ],
@@ -227,6 +384,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+// ─── Date Divider ─────────────────────────────────────────────────────────────
 class _DateDivider extends StatelessWidget {
   final String label;
   const _DateDivider({required this.label});
@@ -237,12 +395,18 @@ class _DateDivider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+          Expanded(
+              child:
+                  Divider(color: Colors.white.withValues(alpha: 0.1))),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(label, style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+            child: Text(label,
+                style: const TextStyle(
+                    color: AppColors.textHint, fontSize: 12)),
           ),
-          Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+          Expanded(
+              child:
+                  Divider(color: Colors.white.withValues(alpha: 0.1))),
         ],
       ),
     );

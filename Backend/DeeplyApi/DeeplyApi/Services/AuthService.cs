@@ -38,7 +38,16 @@ public class AuthService(AppDbContext db, JwtService jwtService) : IAuthService
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
-        return new OkObjectResult(new { user.Id, user.Email, user.Name, Gender = gendre.Name });
+
+        var refresh = new RefreshToken
+        {
+            UserId = user.Id,
+            Token = jwtService.GenerateRefreshToken(),
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(30)
+        };
+        db.RefreshTokens.Add(refresh);
+        await db.SaveChangesAsync();
+        return new OkObjectResult(new { accessToken = jwtService.GenerateToken(user), refreshToken = refresh.Token });
     }
 
     public async Task<ActionResult> Login(LoginRequest request)

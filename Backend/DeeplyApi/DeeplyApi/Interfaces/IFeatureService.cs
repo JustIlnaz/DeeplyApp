@@ -12,7 +12,11 @@ public interface IFeatureService
     Task<ActionResult> GetEvents(int userId);
     Task<ActionResult> AddMood(int userId, CreateMoodRequest request);
     Task<ActionResult> WeeklyMood(int userId);
-    Task<ActionResult> GetQuestionToday();
+    Task<ActionResult> GetQuestionToday(int userId);
+    Task<ActionResult> GetQuestionWithAnswers(int userId);
+    Task<ActionResult> GetActiveChallenge(int userId);
+    Task<ActionResult> GetAllSecretMessages(int userId);
+    Task<ActionResult> GetCheckinStatus(int userId);
     Task<ActionResult> AnswerQuestion(int userId, int questionId, AnswerQuestionRequest request);
     Task<ActionResult> AddCheckIn(int userId, WeeklyCheckInRequest request);
     Task<ActionResult> ChallengeTemplates();

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_text_field.dart';
+import 'couple_setup_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _gender = 'м';
-  bool _isLoading = false;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
@@ -30,9 +32,10 @@ class _RegisterScreenState extends State<RegisterScreen>
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
   }
 
@@ -47,15 +50,57 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
-  void _register() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-    // TODO: navigate to pair connect
+  Future<void> _register() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirm = _confirmPasswordController.text.trim();
+    final firstName = _firstNameController.text.trim();
+    final lastName = _lastNameController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || firstName.isEmpty) {
+      _showError('Заполните все поля');
+      return;
+    }
+
+    if (password != confirm) {
+      _showError('Пароли не совпадают');
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.register(
+      email: email,
+      password: password,
+      name: '$firstName $lastName'.trim(),
+      gender: _gender,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, _, _) => const CoupleSetupScreen(),
+          transitionsBuilder: (_, anim, _, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
+    } else {
+      _showError(auth.error ?? 'Ошибка регистрации');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red.shade700),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -79,7 +124,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
@@ -89,7 +133,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.15),
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -113,12 +161,12 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                   _label('Фамилия'),
                   const SizedBox(height: 8),
-                  AppTextField(hint: 'Ilia', controller: _lastNameController),
+                  AppTextField(hint: 'Ivanov', controller: _lastNameController),
                   const SizedBox(height: 16),
 
                   _label('Имя'),
                   const SizedBox(height: 8),
-                  AppTextField(hint: 'Topuria', controller: _firstNameController),
+                  AppTextField(hint: 'Ivan', controller: _firstNameController),
                   const SizedBox(height: 16),
 
                   _label('Почта'),
@@ -148,7 +196,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                   const SizedBox(height: 20),
 
-                  // Gender selector
                   Row(
                     children: [
                       _label('Пол'),
@@ -173,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   AppButton(
                     text: 'Зарегистрироваться',
                     onPressed: _register,
-                    isLoading: _isLoading,
+                    isLoading: isLoading,
                   ),
                   const SizedBox(height: 20),
 
@@ -210,16 +257,14 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  Widget _label(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
+  Widget _label(String text) => Text(
+    text,
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+    ),
+  );
 }
 
 class _GenderButton extends StatelessWidget {
@@ -247,7 +292,9 @@ class _GenderButton extends StatelessWidget {
           color: selected ? selectedColor : AppColors.bgInput,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? selectedColor : Colors.white.withValues(alpha: 0.1),
+            color: selected
+                ? selectedColor
+                : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Center(

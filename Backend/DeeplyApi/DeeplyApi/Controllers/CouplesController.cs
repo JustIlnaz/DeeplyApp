@@ -35,8 +35,7 @@ public class CouplesController(ICoupleService service) : ControllerBase
     private bool TryResolveUserId(out int userId)
     {
         userId = 0;
-        var header = HttpContext.Request.Headers.Authorization.ToString();
-        var token = string.IsNullOrWhiteSpace(header) ? HttpContext.Request.Headers["Authorization"].ToString() : header.Trim();
+        var token = HttpContext.Request.Headers.Authorization.ToString().Trim();
         if (string.IsNullOrWhiteSpace(token)) return false;
 
         try

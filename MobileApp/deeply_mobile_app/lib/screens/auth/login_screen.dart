@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/common/app_text_field.dart';
+import 'couple_setup_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
-  bool _isLoading = false;
 
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
@@ -48,10 +50,30 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _login() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-    // TODO: navigate to home
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Введите email и пароль')),
+      );
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.login(email: email, password: password);
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const CoupleSetupScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.error ?? 'Ошибка входа')),
+      );
+    }
   }
 
   @override
@@ -180,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen>
                         AppButton(
                           text: 'Вход',
                           onPressed: _login,
-                          isLoading: _isLoading,
+                          isLoading: context.watch<AuthProvider>().isLoading,
                         ),
                         const SizedBox(height: 24),
                         Row(

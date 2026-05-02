@@ -69,7 +69,28 @@ public class FeaturesController : ControllerBase
     [Route("question/today")]
     public async Task<IActionResult> GetQuestionToday()
     {
-        return await _service.GetQuestionToday();
+        return await ExecuteAuthorized(_service.GetQuestionToday);
+    }
+
+    [HttpGet]
+    [Route("challenges/active")]
+    public async Task<IActionResult> GetActiveChallenge()
+    {
+        return await ExecuteAuthorized(_service.GetActiveChallenge);
+    }
+
+    [HttpGet]
+    [Route("secret-messages/all")]
+    public async Task<IActionResult> GetAllSecretMessages()
+    {
+        return await ExecuteAuthorized(_service.GetAllSecretMessages);
+    }
+
+    [HttpGet]
+    [Route("checkin/weekly/status")]
+    public async Task<IActionResult> GetCheckinStatus()
+    {
+        return await ExecuteAuthorized(_service.GetCheckinStatus);
     }
 
     [HttpPost]

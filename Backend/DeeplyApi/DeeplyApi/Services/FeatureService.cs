@@ -79,18 +79,29 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
         return new OkObjectResult(await db.MoodEntries.Where(x => x.CoupleId == couple.Id && x.Day >= from).OrderBy(x => x.Day).ToListAsync());
     }
 
-    public async Task<ActionResult> GetQuestionToday()
+    public async Task<ActionResult> GetQuestionToday(int userId)
     {
+        var couple = await GetCouple(userId);
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var q = await db.DailyQuestions.FirstOrDefaultAsync(x => x.Day == today);
         if (q is null)
         {
-            q = new DailyQuestion { Day = today, Category = "deep", Text = "What made you feel loved today?" };
+            q = new DailyQuestion { Day = today, Category = "romantic", Text = "Какое воспоминание о нас ты хранишь особенно бережно?" };
             db.DailyQuestions.Add(q);
             await db.SaveChangesAsync();
         }
-        return new OkObjectResult(q);
+        if (couple is null)
+            return new OkObjectResult(new { q.Id, q.Text, q.Category, myAnswer = (string?)null, partnerAnswer = (string?)null });
+
+        var answers = await db.DailyQuestionAnswers
+            .Where(x => x.QuestionId == q.Id && x.CoupleId == couple.Id)
+            .ToListAsync();
+        var myAnswer = answers.FirstOrDefault(x => x.UserId == userId)?.Answer;
+        var partnerAnswer = myAnswer != null ? answers.FirstOrDefault(x => x.UserId != userId)?.Answer : null;
+        return new OkObjectResult(new { q.Id, q.Text, q.Category, myAnswer, partnerAnswer });
     }
+
+    public Task<ActionResult> GetQuestionWithAnswers(int userId) => GetQuestionToday(userId);
 
     public async Task<ActionResult> AnswerQuestion(int userId, int questionId, AnswerQuestionRequest request)
     {
@@ -250,10 +261,77 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
     {
         var couple = await GetCouple(userId);
         if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
-        var records = await db.FinanceRecords.Where(x => x.CoupleId == couple.Id).ToListAsync();
+        var records = await db.FinanceRecords.Where(x => x.CoupleId == couple.Id).OrderByDescending(x => x.DateUtc).ToListAsync();
         var income = records.Where(x => x.Type == "income").Sum(x => x.Amount);
         var expense = records.Where(x => x.Type == "expense").Sum(x => x.Amount);
-        return new OkObjectResult(new { income, expense, balance = income - expense });
+        var goals = await db.FinanceGoals.Where(x => x.CoupleId == couple.Id).ToListAsync();
+        return new OkObjectResult(new
+        {
+            totalIncome = income,
+            totalExpense = expense,
+            balance = income - expense,
+            recentRecords = records.Take(10),
+            goals
+        });
+    }
+
+    public async Task<ActionResult> GetActiveChallenge(int userId)
+    {
+        var couple = await GetCouple(userId);
+        if (couple is null) return new OkObjectResult((object?)null);
+        var challenge = await db.CoupleChallenges.FirstOrDefaultAsync(x => x.CoupleId == couple.Id && !x.IsCompleted);
+        if (challenge is null) return new OkObjectResult((object?)null);
+        var template = await db.ChallengeTemplates.FindAsync(challenge.TemplateId);
+        var completedDays = await db.ChallengeProgresses
+            .Where(x => x.CoupleChallengeId == challenge.Id && x.Done)
+            .Select(x => x.Day.ToString("yyyy-MM-dd"))
+            .ToListAsync();
+        return new OkObjectResult(new
+        {
+            challenge.Id,
+            challenge.TemplateId,
+            title = template?.Title ?? "",
+            durationDays = template?.DurationDays ?? 7,
+            startedOn = challenge.StartedOn.ToString("yyyy-MM-dd"),
+            completedDays,
+            challenge.IsCompleted
+        });
+    }
+
+    public async Task<ActionResult> GetAllSecretMessages(int userId)
+    {
+        var couple = await GetCouple(userId);
+        if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
+        var messages = await db.SecretMessages
+            .Where(x => x.CoupleId == couple.Id)
+            .OrderByDescending(x => x.OpenAtUtc)
+            .ToListAsync();
+        return new OkObjectResult(messages.Select(m => new
+        {
+            m.Id,
+            m.Message,
+            m.OpenAtUtc,
+            isOpened = m.OpenAtUtc <= DateTime.UtcNow,
+            isMine = m.SenderUserId == userId
+        }));
+    }
+
+    public async Task<ActionResult> GetCheckinStatus(int userId)
+    {
+        var couple = await GetCouple(userId);
+        if (couple is null) return new OkObjectResult(new { mySubmitted = false, partnerSubmitted = false });
+        var now = DateTime.UtcNow.Date;
+        var monday = DateOnly.FromDateTime(now.AddDays(-((int)now.DayOfWeek + 6) % 7));
+        var checkins = await db.WeeklyCheckIns
+            .Where(x => x.CoupleId == couple.Id && x.WeekStart == monday)
+            .Select(x => x.UserId)
+            .ToListAsync();
+        return new OkObjectResult(new
+        {
+            mySubmitted = checkins.Contains(userId),
+            partnerSubmitted = checkins.Any(x => x != userId),
+            weekStart = monday.ToString("yyyy-MM-dd")
+        });
     }
 
     public async Task<ActionResult> AddGoal(int userId, CreateFinanceGoalRequest request)

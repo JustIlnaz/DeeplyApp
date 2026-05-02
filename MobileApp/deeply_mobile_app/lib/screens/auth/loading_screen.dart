@@ -38,8 +38,8 @@ class _LoadingScreenState extends State<LoadingScreen>
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const OnboardingScreen(),
-            transitionsBuilder: (_, anim, __, child) =>
+            pageBuilder: (_, _, _) => const OnboardingScreen(),
+            transitionsBuilder: (_, anim, _, child) =>
                 FadeTransition(opacity: anim, child: child),
             transitionDuration: const Duration(milliseconds: 600),
           ),

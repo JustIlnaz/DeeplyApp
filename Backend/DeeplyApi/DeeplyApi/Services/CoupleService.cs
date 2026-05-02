@@ -23,7 +23,14 @@ public class CoupleService(AppDbContext db) : ICoupleService
         };
         db.Couples.Add(couple);
         await db.SaveChangesAsync();
-        return new OkObjectResult(new { couple.Id, couple.InviteCode });
+        return new OkObjectResult(new
+        {
+            couple.Id,
+            couple.User1Id,
+            user2Id = (int?)null,
+            couple.InviteCode,
+            anniversaryDate = couple.AnniversaryDate?.ToString("yyyy-MM-dd")
+        });
     }
 
     public async Task<ActionResult> Join(int userId, JoinCoupleRequest request)
@@ -45,6 +52,13 @@ public class CoupleService(AppDbContext db) : ICoupleService
     {
         var couple = await db.Couples.FirstOrDefaultAsync(x => x.User1Id == userId || x.User2Id == userId);
         if (couple is null) return new NotFoundObjectResult(new { message = "Couple not found" });
-        return new OkObjectResult(couple);
+        return new OkObjectResult(new
+        {
+            couple.Id,
+            couple.User1Id,
+            couple.User2Id,
+            couple.InviteCode,
+            anniversaryDate = couple.AnniversaryDate?.ToString("yyyy-MM-dd")
+        });
     }
 }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../storage/secure_storage.dart';
 import 'api_endpoints.dart';
 
@@ -24,9 +25,20 @@ class DioClient {
         if (token != null) {
           options.headers['Authorization'] = token;
         }
+        debugPrint('[DioClient] --> ${options.method} ${options.uri}');
+        debugPrint('[DioClient]     headers: ${options.headers}');
+        debugPrint('[DioClient]     body: ${options.data}');
         handler.next(options);
       },
+      onResponse: (response, handler) {
+        debugPrint('[DioClient] <-- ${response.statusCode} ${response.requestOptions.uri}');
+        debugPrint('[DioClient]     data: ${response.data}');
+        handler.next(response);
+      },
       onError: (error, handler) async {
+        debugPrint('[DioClient] ERR ${error.type} ${error.response?.statusCode} ${error.requestOptions.uri}');
+        debugPrint('[DioClient]     response: ${error.response?.data}');
+        debugPrint('[DioClient]     message: ${error.message}');
         if (error.response?.statusCode == 401) {
           final refreshed = await _tryRefresh(dio);
           if (refreshed) {

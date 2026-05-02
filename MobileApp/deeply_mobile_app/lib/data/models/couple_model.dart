@@ -10,7 +10,7 @@ class CoupleModel {
     required this.user1Id,
     this.user2Id,
     required this.inviteCode,
-    this.anniversaryDate,
+    this.anniversaryDate, 
   });
 
   factory CoupleModel.fromJson(Map<String, dynamic> j) => CoupleModel(

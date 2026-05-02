@@ -21,12 +21,18 @@ class FeaturesProvider extends ChangeNotifier {
   List<MoodModel> moodWeekly = [];
   QuestionModel? questionToday;
   List<ChallengeTemplateModel> challengeTemplates = [];
+  ChallengeProgressModel? activeChallenge;
   List<CapsuleModel> openedCapsules = [];
   List<SecretMessageModel> secretMessages = [];
+  List<SecretMessageModel> allSecretMessages = [];
   List<LoveMapPointModel> lovePoints = [];
   List<TodoModel> todos = [];
   FinanceSummaryModel? financeSummary;
   int closenessIndex = 0;
+  bool myCheckinSubmitted = false;
+  bool partnerCheckinSubmitted = false;
+  MoodModel? todayMyMood;
+  MoodModel? todayPartnerMood;
   bool isLoading = false;
   String? error;
 
@@ -141,8 +147,18 @@ class FeaturesProvider extends ChangeNotifier {
         'whereWasTension': whereWasTension,
         'whatToImprove': whatToImprove,
       });
+      await fetchCheckinStatus();
       return true;
     } catch (_) { return false; }
+  }
+
+  Future<void> fetchCheckinStatus() async {
+    try {
+      final r = await _dio.get(ApiEndpoints.checkinStatus);
+      myCheckinSubmitted = r.data['mySubmitted'] ?? false;
+      partnerCheckinSubmitted = r.data['partnerSubmitted'] ?? false;
+      notifyListeners();
+    } catch (_) {}
   }
 
   // ── Challenges ────────────────────────────────────────────────────────────
@@ -176,6 +192,18 @@ class FeaturesProvider extends ChangeNotifier {
     } catch (_) { return false; }
   }
 
+  Future<void> fetchActiveChallenge() async {
+    try {
+      final r = await _dio.get(ApiEndpoints.challengeActive);
+      if (r.data != null) {
+        activeChallenge = ChallengeProgressModel.fromJson(r.data);
+      } else {
+        activeChallenge = null;
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
   // ── Capsule ───────────────────────────────────────────────────────────────
   Future<void> fetchOpenedCapsules() async {
     try {
@@ -200,6 +228,14 @@ class FeaturesProvider extends ChangeNotifier {
     try {
       final r = await _dio.get(ApiEndpoints.secretMessages);
       secretMessages = (r.data as List).map((e) => SecretMessageModel.fromJson(e)).toList();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> fetchAllSecretMessages() async {
+    try {
+      final r = await _dio.get(ApiEndpoints.secretMessagesAll);
+      allSecretMessages = (r.data as List).map((e) => SecretMessageModel.fromJson(e)).toList();
       notifyListeners();
     } catch (_) {}
   }
@@ -265,14 +301,15 @@ class FeaturesProvider extends ChangeNotifier {
 
   Future<bool> updateTodoStatus(int id, bool isDone) async {
     try {
-      await _dio.patch(ApiEndpoints.updateTodoStatus(id), data: {'isDone': isDone});
+      final newStatus = isDone ? 'done' : 'todo';
+      await _dio.patch(ApiEndpoints.updateTodoStatus(id), data: {'status': newStatus});
       final idx = todos.indexWhere((t) => t.id == id);
       if (idx != -1) {
         todos[idx] = TodoModel(
           id: todos[idx].id,
           title: todos[idx].title,
           responsibleUserId: todos[idx].responsibleUserId,
-          isDone: isDone,
+          status: newStatus,
         );
         notifyListeners();
       }

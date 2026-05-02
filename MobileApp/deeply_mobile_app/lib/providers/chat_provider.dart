@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
 import '../data/models/message_model.dart';
