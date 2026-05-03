@@ -95,6 +95,21 @@ class AuthProvider extends ChangeNotifier {
   /// Alias for checkAuth — refreshes userId/userName from stored token.
   Future<void> fetchProfile() => checkAuth();
 
+  Future<bool> fetchProfileFromApi() async {
+    try {
+      final r = await _dio.get(ApiEndpoints.usersMe);
+      if (r.statusCode == 200 && r.data != null) {
+        userName = r.data['name'] ?? '';
+        userEmail = r.data['email'] ?? '';
+        notifyListeners();
+        return true;
+      }
+    } on DioException catch (e) {
+      debugPrint('[AuthProvider] fetchProfileFromApi error: ${e.response?.data}');
+    }
+    return false;
+  }
+
   void _parseToken(String token) {
     try {
       final parts = token.split('.');

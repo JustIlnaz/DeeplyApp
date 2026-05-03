@@ -26,12 +26,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchData() async {
     if (!mounted) return;
+    final auth = context.read<AuthProvider>();
     final fp = context.read<FeaturesProvider>();
+
+    // Обновляем имя пользователя из БД
+    if (auth.userId != null) {
+      await auth.fetchProfileFromApi();
+    }
+
     await Future.wait([
       fp.fetchQuestionToday(),
       fp.fetchMoodWeekly(),
       fp.fetchClosenessIndex(),
       fp.fetchActiveChallenge(),
+      fp.fetchAttachmentTestResult(),
     ]);
   }
 

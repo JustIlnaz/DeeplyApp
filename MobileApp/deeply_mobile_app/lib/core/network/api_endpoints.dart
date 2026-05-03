@@ -1,7 +1,7 @@
 class ApiEndpoints {
   static const String baseUrl = 'http://10.0.2.2:5190';
 
-  static const String usersMe = '/api/users/me';
+  static const String usersMe = '/api/auth/me';
   static String userById(int id) => '/api/users/$id';
 
   static const String register = '/api/auth/register';
@@ -54,6 +54,7 @@ class ApiEndpoints {
   static const String financeGoals = '/api/features/finance/goals';
 
   static const String attachmentTest = '/api/features/attachment-test';
+  static const String attachmentTestResult = '/api/features/attachment-test/result';
   static const String closenessIndex = '/api/features/closeness-index';
 
   static const String chatHub = '/hubs/chat';

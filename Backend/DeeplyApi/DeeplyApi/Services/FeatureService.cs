@@ -346,17 +346,58 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
 
     public async Task<ActionResult> AttachmentTest(int userId, AttachmentTestRequest request)
     {
-        var sum = request.Answers.Sum();
-        var type = sum <= 40 ? "secure" : (sum <= 65 ? "anxious" : "avoidant");
+        // Индексы вопросов (0-based):
+        // Надёжный (secure): 0,2,4,6,9,12,14,16,18,20,23
+        // Тревожный (anxious): 1,3,7,11,15,21
+        // Избегающий (avoidant): 5,8,10,13,17,19,22,24
+
+        var answers = request.Answers;
+        if (answers == null || answers.Count != 25)
+            return new BadRequestObjectResult(new { message = "Требуется 25 ответов" });
+
+        int SecureScore() => answers[0] + answers[2] + answers[4] + answers[6] + answers[9]
+                           + answers[12] + answers[14] + answers[16] + answers[18] + answers[20] + answers[23];
+
+        int AnxiousScore() => answers[1] + answers[3] + answers[7] + answers[11] + answers[15] + answers[21];
+
+        int AvoidantScore() => answers[5] + answers[8] + answers[10] + answers[13] + answers[17] + answers[19] + answers[22] + answers[24];
+
+        var secure = SecureScore();
+        var anxious = AnxiousScore();
+        var avoidant = AvoidantScore();
+
+        string type = (secure, anxious, avoidant) switch
+        {
+            var t when t.secure >= t.anxious && t.secure >= t.avoidant => "secure",
+            var t when t.anxious >= t.secure && t.anxious >= t.avoidant => "anxious",
+            _ => "avoidant"
+        };
+
         var recommendation = type switch
         {
-            "secure" => "Continue regular emotional check-ins and shared rituals.",
-            "anxious" => "Work on reassurance rituals and calm conflict responses.",
-            _ => "Practice emotional openness and predictable communication."
+            "secure" => "Вы обладаете надёжным типом привязанности. Продолжайте практиковать регулярные эмоциональные чекины и совместные ритуалы. Ваша способность доверять и открываться — отличный фундамент для здоровых отношений. Обсуждайте с партнёром свои чувства, чтобы сохранять близость.",
+            "anxious" => "У вас тревожный тип привязанности. Работайте над ритуалами утешения и спокойной реакцией в конфликтах. Постарайтесь обсуждать свои страхи с партнёром, а не накапливать их. Регулярные заверения в любви и предсказуемое поведение помогут вам чувствовать себя в безопасности.",
+            _ => "У вас избегающий тип привязанности. Практикуйте эмоциональную открытость и предсказуемое общение. Постепенно учитесь делиться чувствами с партнёром — это укрепит связь. Уважайте свою потребность в личном пространстве, но помните, что близость требует уязвимости."
         };
-        var result = new AttachmentTestResult { UserId = userId, AttachmentType = type, Recommendation = recommendation };
+
+        var result = new AttachmentTestResult
+        {
+            UserId = userId,
+            AttachmentType = type,
+            Recommendation = recommendation
+        };
         db.AttachmentTestResults.Add(result);
         await db.SaveChangesAsync();
+        return new OkObjectResult(result);
+    }
+
+    public async Task<ActionResult> GetAttachmentTestResult(int userId)
+    {
+        var result = await db.AttachmentTestResults
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .FirstOrDefaultAsync();
+        if (result is null) return new NotFoundObjectResult(new { message = "Результаты теста не найдены" });
         return new OkObjectResult(result);
     }
 

@@ -36,4 +36,11 @@ public class AuthController : ControllerBase
     {
         return await _service.Refresh(request);
     }
+
+    [HttpGet]
+    [Route("me")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        return await _service.GetCurrentUser(User);
+    }
 }

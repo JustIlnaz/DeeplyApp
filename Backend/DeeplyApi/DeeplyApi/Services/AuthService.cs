@@ -88,4 +88,20 @@ public class AuthService(AppDbContext db, JwtService jwtService) : IAuthService
         await db.SaveChangesAsync();
         return new OkObjectResult(new { accessToken = jwtService.GenerateToken(user), refreshToken = newRefresh.Token });
     }
+
+    public Task<ActionResult> GetCurrentUser(System.Security.Claims.ClaimsPrincipal principal)
+    {
+        var userIdClaim = principal.FindFirst("userId")?.Value;
+        if (userIdClaim is null || !int.TryParse(userIdClaim, out var userId))
+            return Task.FromResult<ActionResult>(new UnauthorizedObjectResult(new { message = "Unauthorized" }));
+
+        return GetUserById(userId);
+    }
+
+    private async Task<ActionResult> GetUserById(int userId)
+    {
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return new NotFoundObjectResult(new { message = "User not found" });
+        return new OkObjectResult(new { user.Id, user.Email, user.Name });
+    }
 }

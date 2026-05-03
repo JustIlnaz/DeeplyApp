@@ -3,11 +3,13 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/couple_provider.dart';
+import '../../providers/features_provider.dart';
 import '../auth/loading_screen.dart';
 import 'home_screen.dart';
 import '../chat/chat_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../love_map/love_map_screen.dart';
+import '../attachment_test/attachment_test_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -245,6 +247,117 @@ class _ProfileTab extends StatelessWidget {
                           ],
                         ],
                       ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Attachment test ──────────────────────────────────────
+              _SectionCard(
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AttachmentTestScreen(),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.purple.withValues(alpha: 0.14),
+                            ),
+                            child: const Icon(
+                              Icons.psychology_outlined,
+                              color: Colors.purple,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Тест на тип привязанности',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Узнайте свой тип и получите советы',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right, color: AppColors.textHint),
+                        ],
+                      ),
+                    ),
+                    // Show result if available
+                    Consumer<FeaturesProvider>(
+                      builder: (context, fp, _) {
+                        final result = fp.attachmentTestResult;
+                        if (result == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.bgCard,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(result.typeEmoji, style: const TextStyle(fontSize: 24)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        result.typeLabel,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        result.recommendation,
+                                        style: const TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

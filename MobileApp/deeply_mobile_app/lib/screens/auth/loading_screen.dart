@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../home/main_shell.dart';
 import 'onboarding_screen.dart';
+import '../../providers/auth_provider.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -34,18 +37,39 @@ class _LoadingScreenState extends State<LoadingScreen>
       ),
     );
     _controller.forward();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, _, _) => const OnboardingScreen(),
-            transitionsBuilder: (_, anim, _, child) =>
-                FadeTransition(opacity: anim, child: child),
-            transitionDuration: const Duration(milliseconds: 600),
-          ),
-        );
-      }
-    });
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final auth = context.read<AuthProvider>();
+    await auth.checkAuth();
+    if (!mounted) return;
+
+    if (auth.isAuthenticated) {
+      Navigator.of(context).pushAndRemoveUntil(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const MainShell(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 600),
+        ),
+        (_) => false,
+      );
+    } else {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const OnboardingScreen(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: const Duration(milliseconds: 600),
+            ),
+            (_) => false,
+          );
+        }
+      });
+    }
   }
 
   @override

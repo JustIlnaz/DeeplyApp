@@ -227,6 +227,13 @@ public class FeaturesController : ControllerBase
     }
 
     [HttpGet]
+    [Route("attachment-test/result")]
+    public async Task<IActionResult> GetAttachmentTestResult()
+    {
+        return await ExecuteAuthorized(userId => _service.GetAttachmentTestResult(userId));
+    }
+
+    [HttpGet]
     [Route("closeness-index")]
     public async Task<IActionResult> ClosenessIndex()
     {

@@ -12,6 +12,7 @@ import '../data/models/secret_message_model.dart';
 import '../data/models/love_map_model.dart';
 import '../data/models/todo_model.dart';
 import '../data/models/finance_model.dart';
+import '../data/models/attachment_test_model.dart';
 
 class FeaturesProvider extends ChangeNotifier {
   final _dio = DioClient.instance;
@@ -33,6 +34,7 @@ class FeaturesProvider extends ChangeNotifier {
   bool partnerCheckinSubmitted = false;
   MoodModel? todayMyMood;
   MoodModel? todayPartnerMood;
+  AttachmentTestResultModel? attachmentTestResult;
   bool isLoading = false;
   String? error;
 
@@ -359,7 +361,7 @@ class FeaturesProvider extends ChangeNotifier {
   Future<void> fetchClosenessIndex() async {
     try {
       final r = await _dio.get(ApiEndpoints.closenessIndex);
-      closenessIndex = r.data['index'] ?? 0;
+      closenessIndex = r.data['score'] ?? 0;
       notifyListeners();
     } catch (_) {}
   }
@@ -367,9 +369,23 @@ class FeaturesProvider extends ChangeNotifier {
   // ── Attachment test ────────────────────────────────────────────────────────
   Future<bool> submitAttachmentTest(List<int> answers) async {
     try {
-      await _dio.post(ApiEndpoints.attachmentTest, data: {'answers': answers});
+      final r = await _dio.post(ApiEndpoints.attachmentTest, data: {'answers': answers});
+      if (r.statusCode == 200 && r.data != null) {
+        attachmentTestResult = AttachmentTestResultModel.fromJson(r.data);
+        notifyListeners();
+      }
       return true;
     } catch (_) { return false; }
+  }
+
+  Future<void> fetchAttachmentTestResult() async {
+    try {
+      final r = await _dio.get(ApiEndpoints.attachmentTestResult);
+      if (r.statusCode == 200 && r.data != null) {
+        attachmentTestResult = AttachmentTestResultModel.fromJson(r.data);
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   void _load(bool v) { isLoading = v; notifyListeners(); }

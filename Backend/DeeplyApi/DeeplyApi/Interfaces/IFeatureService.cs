@@ -36,5 +36,6 @@ public interface IFeatureService
     Task<ActionResult> FinanceSummary(int userId);
     Task<ActionResult> AddGoal(int userId, CreateFinanceGoalRequest request);
     Task<ActionResult> AttachmentTest(int userId, AttachmentTestRequest request);
+    Task<ActionResult> GetAttachmentTestResult(int userId);
     Task<ActionResult> ClosenessIndex(int userId);
 }

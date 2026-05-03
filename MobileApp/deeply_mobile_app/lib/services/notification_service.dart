@@ -23,7 +23,7 @@ class NotificationService {
     _initialized = true;
   }
 
-  static void _onTap(NotificationResponse response) {}
+  static void _onTap(NotificationResponse response) {} 
 
   static Future<void> showMessage({
     required String senderName,
