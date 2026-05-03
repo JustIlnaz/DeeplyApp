@@ -37,7 +37,9 @@ class _LoadingScreenState extends State<LoadingScreen>
       ),
     );
     _controller.forward();
-    _checkAuth();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuth();
+    });
   }
 
   Future<void> _checkAuth() async {
@@ -46,15 +48,19 @@ class _LoadingScreenState extends State<LoadingScreen>
     if (!mounted) return;
 
     if (auth.isAuthenticated) {
-      Navigator.of(context).pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const MainShell(),
-          transitionsBuilder: (_, anim, __, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 600),
-        ),
-        (_) => false,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const MainShell(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: const Duration(milliseconds: 600),
+            ),
+            (_) => false,
+          );
+        }
+      });
     } else {
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {

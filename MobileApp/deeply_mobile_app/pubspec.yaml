@@ -35,6 +35,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   signalr_netcore: ^1.3.5
   flutter_local_notifications: ^17.2.2
+  image_picker: ^1.1.2
+  geocoding: ^3.0.0
 
 
 

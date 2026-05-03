@@ -14,7 +14,39 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
     {
         var couple = await GetCouple(userId);
         if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
-        var entry = new MemoryEntry { CoupleId = couple.Id, Text = request.Text, PhotoUrl = request.PhotoUrl, VideoUrl = request.VideoUrl, IsPinned = request.IsPinned };
+        
+        string? photoUrl = null;
+        string? videoUrl = null;
+        
+        // Save photo if provided
+        if (request.Photo != null)
+        {
+            var photoExt = Path.GetExtension(request.Photo.FileName);
+            var photoFileName = $"{Guid.NewGuid()}{photoExt}";
+            var photoPath = Path.Combine("wwwroot", "uploads", "memories", photoFileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(photoPath)!);
+            using (var stream = new FileStream(photoPath, FileMode.Create))
+            {
+                await request.Photo.CopyToAsync(stream);
+            }
+            photoUrl = $"/uploads/memories/{photoFileName}";
+        }
+        
+        // Save video if provided
+        if (request.Video != null)
+        {
+            var videoExt = Path.GetExtension(request.Video.FileName);
+            var videoFileName = $"{Guid.NewGuid()}{videoExt}";
+            var videoPath = Path.Combine("wwwroot", "uploads", "memories", videoFileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(videoPath)!);
+            using (var stream = new FileStream(videoPath, FileMode.Create))
+            {
+                await request.Video.CopyToAsync(stream);
+            }
+            videoUrl = $"/uploads/memories/{videoFileName}";
+        }
+        
+        var entry = new MemoryEntry { CoupleId = couple.Id, Text = request.Text, PhotoUrl = photoUrl, VideoUrl = videoUrl, IsPinned = request.IsPinned };
         db.MemoryEntries.Add(entry);
         await db.SaveChangesAsync();
         return new OkObjectResult(entry);
@@ -206,7 +238,31 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
     {
         var couple = await GetCouple(userId);
         if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
-        var point = new LoveMapPoint { CoupleId = couple.Id, Latitude = request.Latitude, Longitude = request.Longitude, PhotoUrl = request.PhotoUrl, Description = request.Description };
+        
+        string? photoUrl = null;
+        
+        // Save photo if provided
+        if (request.Photo != null)
+        {
+            var photoExt = Path.GetExtension(request.Photo.FileName);
+            var photoFileName = $"{Guid.NewGuid()}{photoExt}";
+            var photoPath = Path.Combine("wwwroot", "uploads", "lovemap", photoFileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(photoPath)!);
+            using (var stream = new FileStream(photoPath, FileMode.Create))
+            {
+                await request.Photo.CopyToAsync(stream);
+            }
+            photoUrl = $"/uploads/lovemap/{photoFileName}";
+        }
+        
+        var point = new LoveMapPoint { 
+            CoupleId = couple.Id, 
+            Latitude = request.Latitude, 
+            Longitude = request.Longitude, 
+            PhotoUrl = photoUrl, 
+            Description = request.Description,
+            Address = request.Address 
+        };
         db.LoveMapPoints.Add(point);
         await db.SaveChangesAsync();
         return new OkObjectResult(point);
@@ -393,12 +449,37 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
 
     public async Task<ActionResult> GetAttachmentTestResult(int userId)
     {
-        var result = await db.AttachmentTestResults
+        var couple = await GetCouple(userId);
+        if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
+        
+        // Get user's result
+        var userResult = await db.AttachmentTestResults
             .Where(x => x.UserId == userId)
             .OrderByDescending(x => x.CreatedAtUtc)
             .FirstOrDefaultAsync();
-        if (result is null) return new NotFoundObjectResult(new { message = "Результаты теста не найдены" });
-        return new OkObjectResult(result);
+        
+        // Get partner's result
+        var partnerId = couple.User1Id == userId ? couple.User2Id : couple.User1Id;
+        var partnerResult = partnerId.HasValue 
+            ? await db.AttachmentTestResults
+                .Where(x => x.UserId == partnerId.Value)
+                .OrderByDescending(x => x.CreatedAtUtc)
+                .FirstOrDefaultAsync()
+            : null;
+        
+        if (userResult is null && partnerResult is null) 
+            return new NotFoundObjectResult(new { message = "Результаты теста не найдены" });
+        
+        return new OkObjectResult(new {
+            user = userResult != null ? new { 
+                attachmentType = userResult.AttachmentType,
+                recommendation = userResult.Recommendation 
+            } : null,
+            partner = partnerResult != null ? new { 
+                attachmentType = partnerResult.AttachmentType,
+                recommendation = partnerResult.Recommendation 
+            } : null
+        });
     }
 
     public async Task<ActionResult> ClosenessIndex(int userId)

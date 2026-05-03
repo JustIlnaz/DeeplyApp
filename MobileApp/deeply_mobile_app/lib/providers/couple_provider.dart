@@ -108,5 +108,5 @@ class CoupleProvider extends ChangeNotifier {
     } finally { _load(false); }
   }
 
-  void _load(bool v) { isLoading = v; notifyListeners(); }
+    void _load(bool v) { isLoading = v; notifyListeners(); }
 }

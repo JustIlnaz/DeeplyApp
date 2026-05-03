@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../core/network/dio_client.dart';
@@ -48,14 +49,21 @@ class FeaturesProvider extends ChangeNotifier {
     finally { _load(false); }
   }
 
-  Future<bool> addMemory({String? text, String? photoUrl, String? videoUrl, bool isPinned = false}) async {
+  Future<bool> addMemory({String? text, File? photoFile, File? videoFile, bool isPinned = false}) async {
     try {
-      final r = await _dio.post(ApiEndpoints.memories, data: {
+      final formData = FormData.fromMap({
         if (text != null) 'text': text,
-        if (photoUrl != null) 'photoUrl': photoUrl,
-        if (videoUrl != null) 'videoUrl': videoUrl,
         'isPinned': isPinned,
+        if (photoFile != null)
+          'photo': await MultipartFile.fromFile(photoFile.path, filename: photoFile.path.split('/').last),
+        if (videoFile != null)
+          'video': await MultipartFile.fromFile(videoFile.path, filename: videoFile.path.split('/').last),
       });
+      final r = await _dio.post(
+        ApiEndpoints.memories,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
       memories.insert(0, MemoryModel.fromJson(r.data));
       notifyListeners();
       return true;
@@ -264,16 +272,24 @@ class FeaturesProvider extends ChangeNotifier {
   Future<bool> addLovePoint({
     required double latitude,
     required double longitude,
-    String? photoUrl,
     String? description,
+    File? photoFile,
+    String? address,
   }) async {
     try {
-      final r = await _dio.post(ApiEndpoints.loveMapPoints, data: {
+      final formData = FormData.fromMap({
         'latitude': latitude,
         'longitude': longitude,
-        if (photoUrl != null) 'photoUrl': photoUrl,
         if (description != null) 'description': description,
+        if (address != null) 'address': address,
+        if (photoFile != null)
+          'photo': await MultipartFile.fromFile(photoFile.path, filename: photoFile.path.split('/').last),
       });
+      final r = await _dio.post(
+        ApiEndpoints.loveMapPoints,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
       lovePoints.add(LoveMapPointModel.fromJson(r.data));
       notifyListeners();
       return true;

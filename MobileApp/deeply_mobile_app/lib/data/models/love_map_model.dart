@@ -4,6 +4,7 @@ class LoveMapPointModel {
   final double longitude;
   final String? photoUrl;
   final String? description;
+  final String? address;
 
   LoveMapPointModel({
     required this.id,
@@ -11,6 +12,7 @@ class LoveMapPointModel {
     required this.longitude,
     this.photoUrl,
     this.description,
+    this.address,
   });
 
   factory LoveMapPointModel.fromJson(Map<String, dynamic> j) => LoveMapPointModel(
@@ -19,5 +21,6 @@ class LoveMapPointModel {
     longitude: (j['longitude'] ?? 0).toDouble(),
     photoUrl: j['photoUrl'],
     description: j['description'],
+    address: j['address'],
   );
 }

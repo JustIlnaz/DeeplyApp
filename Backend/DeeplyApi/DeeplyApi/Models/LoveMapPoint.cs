@@ -10,5 +10,6 @@ public class LoveMapPoint
     public double Longitude { get; set; }
     [MaxLength(500)] public string? PhotoUrl { get; set; }
     [MaxLength(1000)] public string? Description { get; set; }
+    [MaxLength(500)] public string? Address { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

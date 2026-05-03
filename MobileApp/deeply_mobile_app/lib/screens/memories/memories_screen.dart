@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/features_provider.dart';
 import '../../data/models/memory_model.dart';
@@ -15,6 +17,7 @@ class MemoriesScreen extends StatefulWidget {
 class _MemoriesScreenState extends State<MemoriesScreen> {
   String _filter = 'Все';
   final List<String> _filters = ['Все', 'Фото', 'Видео', 'Заметки'];
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -40,9 +43,12 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
     }
   }
 
-  void _showAddSheet() {
+  Future<void> _showAddSheet() async {
     final ctrl = TextEditingController();
-    showModalBottomSheet(
+    File? selectedMedia;
+    bool isVideo = false;
+
+    await showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.bgCard,
       shape: const RoundedRectangleBorder(
@@ -50,59 +56,263 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
       ),
       isScrollControlled: true,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Новое воспоминание',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Media selection
+                    if (selectedMedia == null) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                final xfile = await _picker.pickImage(
+                                    source: ImageSource.gallery);
+                                if (xfile != null) {
+                                  setSheetState(() {
+                                    selectedMedia = File(xfile.path);
+                                    isVideo = false;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgInput,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.photo_camera_back_outlined,
+                                        color: AppColors.primary, size: 24),
+                                    const SizedBox(height: 4),
+                                    Text('Фото',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                final xfile = await _picker.pickVideo(
+                                    source: ImageSource.gallery);
+                                if (xfile != null) {
+                                  setSheetState(() {
+                                    selectedMedia = File(xfile.path);
+                                    isVideo = true;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: AppColors.bgInput,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.videocam_outlined,
+                                        color: Colors.redAccent, size: 24),
+                                    const SizedBox(height: 4),
+                                    Text('Видео',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: isVideo
+                                ? Container(
+                                    height: 160,
+                                    width: double.infinity,
+                                    color: AppColors.bgInput,
+                                    child: const Center(
+                                      child: Icon(Icons.videocam,
+                                          color: Colors.redAccent, size: 48),
+                                    ),
+                                  )
+                                : Image.file(
+                                    selectedMedia!,
+                                    height: 160,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () =>
+                                  setSheetState(() => selectedMedia = null),
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: const BoxDecoration(
+                                  color: Colors.black54,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close,
+                                    color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Text field
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.bgInput,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: TextField(
+                        controller: ctrl,
+                        autofocus: false,
+                        style: const TextStyle(color: Colors.white),
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          hintText: 'Опишите этот момент...',
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    AppButton(
+                      text: 'Сохранить',
+                      onPressed: () async {
+                        final text = ctrl.text.trim();
+                        if (text.isEmpty && selectedMedia == null) return;
+                        Navigator.pop(ctx);
+                        final fp = context.read<FeaturesProvider>();
+                        await fp.addMemory(
+                          text: text.isNotEmpty ? text : null,
+                          photoFile: !isVideo ? selectedMedia : null,
+                          videoFile: isVideo ? selectedMedia : null,
+                        );
+                        await fp.fetchMemories();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _viewMemory(MemoryModel memory) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.bgCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Новое воспоминание',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.bgInput,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: TextField(
-                  controller: ctrl,
-                  autofocus: true,
-                  style: const TextStyle(color: Colors.white),
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Что произошло?...',
-                    hintStyle: TextStyle(color: AppColors.textHint),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(14),
+              if (memory.photoUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    memory.photoUrl!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 200,
+                      color: AppColors.bgInput,
+                      child: const Center(
+                        child: Icon(Icons.broken_image,
+                            color: AppColors.textHint, size: 40),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              AppButton(
-                text: 'Сохранить',
-                onPressed: () async {
-                  final text = ctrl.text.trim();
-                  if (text.isEmpty) return;
-                  Navigator.pop(ctx);
-                  final fp = context.read<FeaturesProvider>();
-                  await fp.addMemory(text: text);
-                  await fp.fetchMemories();
-                },
+              if (memory.videoUrl != null)
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.bgInput,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.play_circle_fill,
+                        color: Colors.redAccent, size: 48),
+                  ),
+                ),
+              if (memory.photoUrl != null || memory.videoUrl != null)
+                const SizedBox(height: 12),
+              if (memory.text != null)
+                Text(
+                  memory.text!,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 14, height: 1.5),
+                ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Закрыть',
+                      style: TextStyle(color: AppColors.primary)),
+                ),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -212,8 +422,10 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 8),
                     itemCount: filtered.length,
-                    itemBuilder: (context, i) =>
-                        _MemoryCard(memory: filtered[i]),
+                    itemBuilder: (context, i) => GestureDetector(
+                      onTap: () => _viewMemory(filtered[i]),
+                      child: _MemoryCard(memory: filtered[i]),
+                    ),
                   ),
                 ),
             ],
@@ -264,7 +476,6 @@ class _MemoryCard extends StatelessWidget {
 
   String get _title {
     if (memory.isPinned) {
-      // still use content-based label but capped at 30
       if (memory.photoUrl != null) return 'Фото';
       if (memory.videoUrl != null) return 'Видео';
       final t = memory.text ?? '';
@@ -307,18 +518,40 @@ class _MemoryCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Left square icon
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: _iconBgColor.withValues(alpha: memory.isPinned ? 0.3 : 0.2),
+          // Thumbnail or icon
+          if (memory.photoUrl != null)
+            ClipRRect(
               borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                memory.photoUrl!,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: _iconBgColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(_emoji, style: const TextStyle(fontSize: 22)),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: _iconBgColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(_emoji, style: const TextStyle(fontSize: 22)),
+              ),
             ),
-            child: Center(
-              child: Text(_emoji, style: const TextStyle(fontSize: 26)),
-            ),
-          ),
           const SizedBox(width: 14),
           // Right column
           Expanded(
@@ -372,6 +605,7 @@ class _MemoryCard extends StatelessWidget {
               ],
             ),
           ),
+          const Icon(Icons.chevron_right, color: AppColors.textHint, size: 18),
         ],
       ),
     );
