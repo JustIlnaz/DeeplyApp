@@ -39,6 +39,19 @@ class _CoupleSetupScreenState extends State<CoupleSetupScreen>
       end: 1,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward();
+    _checkExistingCouple();
+  }
+
+  Future<void> _checkExistingCouple() async {
+    final coupleProvider = context.read<CoupleProvider>();
+    await coupleProvider.fetchCouple();
+    
+    if (!mounted) return;
+    
+    if (coupleProvider.hasCouple) {
+      debugPrint('[CoupleSetupScreen] Existing couple found, navigating to home');
+      _goToHome();
+    }
   }
 
   @override

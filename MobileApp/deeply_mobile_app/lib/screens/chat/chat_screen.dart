@@ -13,14 +13,14 @@ class _ChatItem {
   final MessageModel? message;
 
   const _ChatItem.divider(String label)
-      : isDivider = true,
-        dividerLabel = label,
-        message = null;
+    : isDivider = true,
+      dividerLabel = label,
+      message = null;
 
   const _ChatItem.msg(MessageModel m)
-      : isDivider = false,
-        dividerLabel = null,
-        message = m;
+    : isDivider = false,
+      dividerLabel = null,
+      message = m;
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -140,8 +140,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final myUserId = context.watch<AuthProvider>().userId;
     final coupleProvider = context.watch<CoupleProvider>();
     final partnerName = coupleProvider.partnerName ?? 'Партнёр';
-    final partnerInitial =
-        partnerName.isNotEmpty ? partnerName[0].toUpperCase() : 'П';
+    final partnerInitial = partnerName.isNotEmpty
+        ? partnerName[0].toUpperCase()
+        : 'П';
 
     final items = _buildItems(chat.messages);
 
@@ -162,8 +163,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? _buildEmptyState()
                 : ListView.builder(
                     controller: _scrollController,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
@@ -203,7 +206,9 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 partnerInitial,
                 style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -214,9 +219,10 @@ class _ChatScreenState extends State<ChatScreen> {
               Text(
                 partnerName,
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const Text(
                 'Онлайн',
@@ -234,8 +240,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.chat_bubble_outline,
-              color: AppColors.textHint, size: 48),
+          Icon(Icons.chat_bubble_outline, color: AppColors.textHint, size: 48),
           const SizedBox(height: 12),
           Text(
             'Начните разговор',
@@ -252,10 +257,12 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.72),
+          maxWidth: MediaQuery.of(context).size.width * 0.72,
+        ),
         child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             // Photo placeholder
             if (msg.photoUrl != null)
@@ -267,16 +274,22 @@ class _ChatScreenState extends State<ChatScreen> {
                   color: AppColors.bgCard,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08)),
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
-                child: const Icon(Icons.image,
-                    color: AppColors.textHint, size: 40),
+                child: const Icon(
+                  Icons.image,
+                  color: AppColors.textHint,
+                  size: 40,
+                ),
               ),
             // Text bubble
             if (msg.text != null && msg.text!.isNotEmpty)
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isMe ? AppColors.primary : AppColors.bgCard,
                   borderRadius: BorderRadius.only(
@@ -289,7 +302,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: Text(
                   msg.text!,
                   style: const TextStyle(
-                      color: Colors.white, fontSize: 15, height: 1.4),
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
                 ),
               ),
             const SizedBox(height: 2),
@@ -300,7 +316,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 Text(
                   _formatTime(msg.sentAtUtc),
                   style: const TextStyle(
-                      color: AppColors.textHint, fontSize: 11),
+                    color: AppColors.textHint,
+                    fontSize: 11,
+                  ),
                 ),
                 if (isMe) ...[
                   const SizedBox(width: 3),
@@ -329,7 +347,8 @@ class _ChatScreenState extends State<ChatScreen> {
       decoration: BoxDecoration(
         color: AppColors.bgDark,
         border: Border(
-            top: BorderSide(color: Colors.white.withValues(alpha: 0.07))),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.07)),
+        ),
       ),
       child: Row(
         children: [
@@ -338,19 +357,19 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: BoxDecoration(
                 color: AppColors.bgCard,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.07)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
               ),
               child: TextField(
                 controller: _messageController,
-                style:
-                    const TextStyle(color: Colors.white, fontSize: 15),
+                style: const TextStyle(color: Colors.white, fontSize: 15),
                 decoration: const InputDecoration(
                   hintText: 'Написать...',
                   hintStyle: TextStyle(color: AppColors.textHint),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 12),
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
                 ),
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _sendMessage(),
@@ -374,8 +393,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.arrow_forward,
-                  color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -395,18 +417,15 @@ class _DateDivider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         children: [
-          Expanded(
-              child:
-                  Divider(color: Colors.white.withValues(alpha: 0.1))),
+          Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(label,
-                style: const TextStyle(
-                    color: AppColors.textHint, fontSize: 12)),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textHint, fontSize: 12),
+            ),
           ),
-          Expanded(
-              child:
-                  Divider(color: Colors.white.withValues(alpha: 0.1))),
+          Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
         ],
       ),
     );

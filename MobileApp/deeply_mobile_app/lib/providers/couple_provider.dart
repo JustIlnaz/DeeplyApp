@@ -24,7 +24,14 @@ class CoupleProvider extends ChangeNotifier {
       _derivePartnerId();
       error = null;
     } on DioException catch (e) {
-      error = e.response?.data?['message'];
+      if (e.response?.statusCode == 404) {
+        debugPrint('[CoupleProvider] No couple found (404) - user needs to create or join');
+        couple = null;
+        error = null;
+      } else {
+        debugPrint('[CoupleProvider] Error fetching couple: ${e.response?.data}');
+        error = e.response?.data?['message'];
+      }
     } finally { _load(false); }
   }
 

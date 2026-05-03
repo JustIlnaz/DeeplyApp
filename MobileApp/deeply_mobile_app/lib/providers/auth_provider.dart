@@ -67,6 +67,7 @@ class AuthProvider extends ChangeNotifier {
       debugPrint('[AuthProvider] tokens saved OK, userId=$userId');
       isAuthenticated = true;
       error = null;
+      notifyListeners();
       return true;
     } on DioException catch (e) {
       debugPrint('[AuthProvider] login error: ${e.response?.data}');
