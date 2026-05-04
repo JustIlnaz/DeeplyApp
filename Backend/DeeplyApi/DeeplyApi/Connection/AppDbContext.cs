@@ -11,7 +11,7 @@ namespace DeeplyApi.Connection
 
         public DbSet<User> Users { get; set; }
         public DbSet<Couple> Couples { get; set; }
-        public DbSet<Gendre> Gendres { get; set; }
+        public DbSet<Gender> Genders { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<MemoryEntry> MemoryEntries { get; set; }
@@ -31,33 +31,33 @@ namespace DeeplyApi.Connection
         public DbSet<FinanceGoal> FinanceGoals { get; set; }
         public DbSet<AttachmentTestResult> AttachmentTestResults { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Couple>()
-            .HasOne(x => x.User1)
-            .WithMany()
-            .HasForeignKey(x => x.User1Id)
-            .OnDelete(DeleteBehavior.Restrict);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Couple>()
+                .HasOne(x => x.User1)
+                .WithMany()
+                .HasForeignKey(x => x.User1Id)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Couple>()
-            .HasOne(x => x.User2)
-            .WithMany()
-            .HasForeignKey(x => x.User2Id)
-            .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Couple>()
+                .HasOne(x => x.User2)
+                .WithMany()
+                .HasForeignKey(x => x.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<User>()
-            .HasOne(x => x.Gendre)
-            .WithMany(x => x.Users)
-            .HasForeignKey(x => x.GendreId)
-            .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<User>()
+                .HasOne(x => x.Gender)
+                .WithMany(x => x.Users)
+                .HasForeignKey(x => x.GenderId)
+                .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<Gendre>().HasIndex(x => x.Name).IsUnique();
-        modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
-        modelBuilder.Entity<Couple>().HasIndex(x => x.InviteCode).IsUnique();
-        modelBuilder.Entity<MoodEntry>().HasIndex(x => new { x.UserId, x.Day }).IsUnique();
-        modelBuilder.Entity<DailyQuestion>().HasIndex(x => x.Day).IsUnique();
-        modelBuilder.Entity<DailyQuestionAnswer>().HasIndex(x => new { x.QuestionId, x.UserId }).IsUnique();
-        modelBuilder.Entity<ChallengeProgress>().HasIndex(x => new { x.CoupleChallengeId, x.Day }).IsUnique();
+            modelBuilder.Entity<Gender>().HasIndex(x => x.Name).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+            modelBuilder.Entity<Couple>().HasIndex(x => x.InviteCode).IsUnique();
+            modelBuilder.Entity<MoodEntry>().HasIndex(x => new { x.UserId, x.Day }).IsUnique();
+            modelBuilder.Entity<DailyQuestion>().HasIndex(x => x.Day).IsUnique();
+            modelBuilder.Entity<DailyQuestionAnswer>().HasIndex(x => new { x.QuestionId, x.UserId }).IsUnique();
+            modelBuilder.Entity<ChallengeProgress>().HasIndex(x => new { x.CoupleChallengeId, x.Day }).IsUnique();
+        }
     }
-}
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/features_provider.dart';
 import '../../data/models/love_map_model.dart';
@@ -30,6 +31,7 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
     final descCtrl = TextEditingController();
     final addressCtrl = TextEditingController();
     File? selectedImage;
+    bool isImagePickerActive = false;
 
     await showModalBottomSheet(
       context: context,
@@ -153,9 +155,15 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
                     else
                       GestureDetector(
                         onTap: () async {
-                          final xfile = await _picker.pickImage(source: ImageSource.gallery);
-                          if (xfile != null) {
-                            setSheetState(() => selectedImage = File(xfile.path));
+                          if (isImagePickerActive) return;
+                          isImagePickerActive = true;
+                          try {
+                            final xfile = await _picker.pickImage(source: ImageSource.gallery);
+                            if (xfile != null && ctx.mounted) {
+                              setSheetState(() => selectedImage = File(xfile.path));
+                            }
+                          } finally {
+                            isImagePickerActive = false;
                           }
                         },
                         child: Container(
@@ -199,10 +207,21 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
                           );
                           return;
                         }
+
+                        double lat = 0;
+                        double lng = 0;
+                        try {
+                          final locations = await locationFromAddress(address);
+                          if (locations.isNotEmpty) {
+                            lat = locations.first.latitude;
+                            lng = locations.first.longitude;
+                          }
+                        } catch (_) {}
+
                         final fp = context.read<FeaturesProvider>();
                         await fp.addLovePoint(
-                          latitude: 0,
-                          longitude: 0,
+                          latitude: lat,
+                          longitude: lng,
                           description: desc.isNotEmpty ? desc : null,
                           photoFile: selectedImage,
                           address: address,
@@ -241,7 +260,7 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       height: 120,
                       color: AppColors.bgInput,
                       child: const Center(child: Icon(Icons.broken_image, color: AppColors.textHint)),
@@ -388,7 +407,7 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
                                         point.photoUrl!,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
+                                        errorBuilder: (_, _, _) => Container(
                                           color: AppColors.bgInput,
                                           child: const Center(
                                             child: Icon(Icons.broken_image, color: AppColors.textHint),
@@ -471,7 +490,7 @@ class _LoveMapScreenState extends State<LoveMapScreen> {
                                       width: 56,
                                       height: 56,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      errorBuilder: (_, _, _) => Container(
                                         width: 56,
                                         height: 56,
                                         color: AppColors.bgInput,

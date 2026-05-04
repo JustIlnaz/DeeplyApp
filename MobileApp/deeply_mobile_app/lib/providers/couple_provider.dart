@@ -25,14 +25,20 @@ class CoupleProvider extends ChangeNotifier {
       error = null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        debugPrint('[CoupleProvider] No couple found (404) - user needs to create or join');
+        debugPrint(
+          '[CoupleProvider] No couple found (404) - user needs to create or join',
+        );
         couple = null;
         error = null;
       } else {
-        debugPrint('[CoupleProvider] Error fetching couple: ${e.response?.data}');
+        debugPrint(
+          '[CoupleProvider] Error fetching couple: ${e.response?.data}',
+        );
         error = e.response?.data?['message'];
       }
-    } finally { _load(false); }
+    } finally {
+      _load(false);
+    }
   }
 
   void setMyUserId(int id) {
@@ -71,31 +77,43 @@ class CoupleProvider extends ChangeNotifier {
   Future<bool> createCouple({String? anniversaryDate}) async {
     _load(true);
     try {
-      debugPrint('[CoupleProvider] createCouple called, anniversaryDate=$anniversaryDate');
+      debugPrint(
+        '[CoupleProvider] createCouple called, anniversaryDate=$anniversaryDate',
+      );
       debugPrint('[CoupleProvider] POST ${ApiEndpoints.coupleCreate}');
-      final r = await _dio.post(ApiEndpoints.coupleCreate, data: {
-        if (anniversaryDate != null) 'anniversaryDate': anniversaryDate,
-      });
-      debugPrint('[CoupleProvider] response status=${r.statusCode} data=${r.data}');
+      final r = await _dio.post(
+        ApiEndpoints.coupleCreate,
+        data: {'anniversaryDate': ?anniversaryDate},
+      );
+      debugPrint(
+        '[CoupleProvider] response status=${r.statusCode} data=${r.data}',
+      );
       couple = CoupleModel.fromJson(r.data);
       _derivePartnerId();
       error = null;
       return true;
     } on DioException catch (e) {
-      debugPrint('[CoupleProvider] DioException type=${e.type} status=${e.response?.statusCode} data=${e.response?.data} message=${e.message}');
+      debugPrint(
+        '[CoupleProvider] DioException type=${e.type} status=${e.response?.statusCode} data=${e.response?.data} message=${e.message}',
+      );
       error = e.response?.data?['message'] ?? 'Ошибка создания пары';
       return false;
     } catch (e) {
       debugPrint('[CoupleProvider] unexpected error: $e');
       error = e.toString();
       return false;
-    } finally { _load(false); }
+    } finally {
+      _load(false);
+    }
   }
 
   Future<bool> joinCouple(String inviteCode) async {
     _load(true);
     try {
-      await _dio.post(ApiEndpoints.coupleJoin, data: {'inviteCode': inviteCode});
+      await _dio.post(
+        ApiEndpoints.coupleJoin,
+        data: {'inviteCode': inviteCode},
+      );
       // join returns { message, coupleId } — fetch full couple model afterwards
       final r = await _dio.get(ApiEndpoints.coupleMe);
       couple = CoupleModel.fromJson(r.data);
@@ -105,8 +123,13 @@ class CoupleProvider extends ChangeNotifier {
     } on DioException catch (e) {
       error = e.response?.data?['message'] ?? 'Неверный код';
       return false;
-    } finally { _load(false); }
+    } finally {
+      _load(false);
+    }
   }
 
-    void _load(bool v) { isLoading = v; notifyListeners(); }
+  void _load(bool v) {
+    isLoading = v;
+    notifyListeners();
+  }
 }

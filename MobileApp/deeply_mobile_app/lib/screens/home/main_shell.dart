@@ -10,6 +10,11 @@ import '../chat/chat_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../love_map/love_map_screen.dart';
 import '../attachment_test/attachment_test_screen.dart';
+import '../finance/finance_screen.dart';
+import '../capsule/capsule_screen.dart';
+import '../secret_messages/secret_message_screen.dart';
+import '../todo/todo_screen.dart';
+import '../checkin/checkin_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -55,8 +60,6 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-
-// ─── Bottom nav bar ────────────────────────────────────────────────────────
 
 class _NavItem {
   final IconData icon;
@@ -124,8 +127,6 @@ class _BottomNavBar extends StatelessWidget {
   }
 }
 
-// ─── Profile tab ───────────────────────────────────────────────────────────
-
 class _ProfileTab extends StatelessWidget {
   const _ProfileTab();
 
@@ -148,7 +149,6 @@ class _ProfileTab extends StatelessWidget {
             children: [
               const SizedBox(height: 48),
 
-              // ── Avatar ────────────────────────────────────────────────
               Container(
                 width: 90,
                 height: 90,
@@ -169,7 +169,6 @@ class _ProfileTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // ── Name ──────────────────────────────────────────────────
               Text(
                 auth.userName.isNotEmpty ? auth.userName : 'Пользователь',
                 style: const TextStyle(
@@ -192,7 +191,6 @@ class _ProfileTab extends StatelessWidget {
 
               const SizedBox(height: 36),
 
-              // ── Couple section ────────────────────────────────────────
               _SectionCard(
                 child: Row(
                   children: [
@@ -254,7 +252,6 @@ class _ProfileTab extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // ── Attachment test ──────────────────────────────────────
               _SectionCard(
                 child: Column(
                   children: [
@@ -309,7 +306,6 @@ class _ProfileTab extends StatelessWidget {
                         ],
                       ),
                     ),
-                    // Show result if available
                     Consumer<FeaturesProvider>(
                       builder: (context, fp, _) {
                         final result = fp.attachmentTestResult;
@@ -327,8 +323,7 @@ class _ProfileTab extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // User's result
-                                Row(
+                                 Row(
                                   children: [
                                     Text(result.typeEmoji, style: const TextStyle(fontSize: 24)),
                                     const SizedBox(width: 12),
@@ -359,8 +354,7 @@ class _ProfileTab extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                // Partner's result
-                                if (result.partnerType != null) ...[
+                                 if (result.partnerType != null) ...[
                                   const SizedBox(height: 12),
                                   const Divider(color: Colors.white12, height: 1),
                                   const SizedBox(height: 12),
@@ -408,7 +402,276 @@ class _ProfileTab extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // ── App version info ───────────────────────────────────────
+              _SectionCard(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const FinanceScreen()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.green.withValues(alpha: 0.14),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: Colors.green,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Финансы',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Доходы, расходы, цели',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textHint),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              _SectionCard(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const TodoScreen()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.blue.withValues(alpha: 0.14),
+                        ),
+                        child: const Icon(
+                          Icons.checklist_outlined,
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'To-Do для двоих',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Совместные задачи',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textHint),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              _SectionCard(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const CheckinScreen()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.orange.withValues(alpha: 0.14),
+                        ),
+                        child: const Icon(
+                          Icons.fact_check_outlined,
+                          color: Colors.orange,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Еженедельный чек-ин',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Проверка отношений',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textHint),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              _SectionCard(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const CapsuleScreen()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.amber.withValues(alpha: 0.14),
+                        ),
+                        child: const Icon(
+                          Icons.hourglass_bottom_outlined,
+                          color: Colors.amber,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Капсула времени',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Письма в будущее',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textHint),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              _SectionCard(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SecretMessageScreen()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.pink.withValues(alpha: 0.14),
+                        ),
+                        child: const Icon(
+                          Icons.lock_clock_outlined,
+                          color: Colors.pink,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Тайные сообщения',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Откроются позже',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: AppColors.textHint),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
               _SectionCard(
                 child: Row(
                   children: [
@@ -453,7 +716,6 @@ class _ProfileTab extends StatelessWidget {
 
               const SizedBox(height: 40),
 
-              // ── Logout button ─────────────────────────────────────────
               GestureDetector(
                 onTap: () async {
                   await auth.logout();

@@ -3,12 +3,20 @@ import 'package:flutter/foundation.dart';
 import '../storage/secure_storage.dart';
 import 'api_endpoints.dart';
 
+typedef AuthErrorCallback = void Function();
+
 class DioClient {
   static Dio? _instance;
+  static AuthErrorCallback? onAuthError;
 
   static Dio get instance {
     _instance ??= _create();
     return _instance!;
+  }
+
+  static void reset() {
+    _instance?.close();
+    _instance = null;
   }
 
   static Dio _create() {
@@ -46,6 +54,11 @@ class DioClient {
             error.requestOptions.headers['Authorization'] = token;
             final response = await dio.fetch(error.requestOptions);
             return handler.resolve(response);
+          } else {
+            await SecureStorage.clear();
+            DioClient.reset();
+            onAuthError?.call();
+            return handler.next(error);
           }
         }
         handler.next(error);

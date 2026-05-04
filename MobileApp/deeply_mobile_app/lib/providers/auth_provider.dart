@@ -42,11 +42,16 @@ class AuthProvider extends ChangeNotifier {
 
       debugPrint('[AuthProvider] register did not return tokens, trying login...');
       return login(email: email, password: password);
-    } on DioException catch (e) {
-      debugPrint('[AuthProvider] register error: ${e.response?.data}');
-      error = e.response?.data?['message'] ?? 'Ошибка регистрации';
-      return false;
-    } finally { _load(false); }
+      } on DioException catch (e) {
+        debugPrint('[AuthProvider] register error: ${e.response?.data}');
+        final data = e.response?.data;
+        if (data is Map) {
+          error = data['message']?.toString() ?? 'Ошибка регистрации';
+        } else {
+          error = data?.toString() ?? 'Ошибка регистрации';
+        }
+        return false;
+      } finally { _load(false); }
   }
 
   Future<bool> login({required String email, required String password}) async {
@@ -71,8 +76,13 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on DioException catch (e) {
       debugPrint('[AuthProvider] login error: ${e.response?.data}');
-      error = e.response?.data?['message'] ?? 'Неверный email или пароль';
-      return false;
+      final data = e.response?.data;
+      if (data is Map) {
+        error = data['message']?.toString() ?? 'Неверный email или пароль';
+      } else {
+        error = data?.toString() ?? 'Неверный email или пароль';
+      }
+       return false;
     } finally { _load(false); }
   }
 

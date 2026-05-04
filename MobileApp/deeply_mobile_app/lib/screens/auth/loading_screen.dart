@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../home/main_shell.dart';
 import 'onboarding_screen.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/couple_provider.dart';
+import '../../providers/features_provider.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -48,13 +50,27 @@ class _LoadingScreenState extends State<LoadingScreen>
     if (!mounted) return;
 
     if (auth.isAuthenticated) {
+      final couple = context.read<CoupleProvider>();
+      final features = context.read<FeaturesProvider>();
+      await couple.fetchCouple();
+      if (couple.hasCouple) {
+        await couple.fetchPartnerProfile(auth.userId ?? 0);
+        await features.fetchLovePoints();
+        await features.fetchFinanceSummary();
+        await features.fetchTodos();
+        await features.fetchQuestionToday();
+        await features.fetchMoodWeekly();
+        await features.fetchCheckinStatus();
+        await features.fetchActiveChallenge();
+        await features.fetchAttachmentTestResult();
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const MainShell(),
-              transitionsBuilder: (_, anim, __, child) =>
-                  FadeTransition(opacity: anim, child: child),
+              pageBuilder: (context, animation, secondaryAnimation) => const MainShell(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+                  FadeTransition(opacity: animation, child: child),
               transitionDuration: const Duration(milliseconds: 600),
             ),
             (_) => false,
@@ -66,9 +82,9 @@ class _LoadingScreenState extends State<LoadingScreen>
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => const OnboardingScreen(),
-              transitionsBuilder: (_, anim, __, child) =>
-                  FadeTransition(opacity: anim, child: child),
+              pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+                  FadeTransition(opacity: animation, child: child),
               transitionDuration: const Duration(milliseconds: 600),
             ),
             (_) => false,

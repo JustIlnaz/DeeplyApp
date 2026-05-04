@@ -52,7 +52,7 @@ class FeaturesProvider extends ChangeNotifier {
   Future<bool> addMemory({String? text, File? photoFile, File? videoFile, bool isPinned = false}) async {
     try {
       final formData = FormData.fromMap({
-        if (text != null) 'text': text,
+        'text': ?text,
         'isPinned': isPinned,
         if (photoFile != null)
           'photo': await MultipartFile.fromFile(photoFile.path, filename: photoFile.path.split('/').last),
@@ -97,7 +97,7 @@ class FeaturesProvider extends ChangeNotifier {
     try {
       final r = await _dio.post(ApiEndpoints.events, data: {
         'title': title,
-        if (description != null) 'description': description,
+        'description': ?description,
         'startsAtUtc': startsAt.toUtc().toIso8601String(),
         if (endsAt != null) 'endsAtUtc': endsAt.toUtc().toIso8601String(),
         if (reminderAt != null) 'reminderAtUtc': reminderAt.toUtc().toIso8601String(),
@@ -113,7 +113,7 @@ class FeaturesProvider extends ChangeNotifier {
     try {
       await _dio.post(ApiEndpoints.mood, data: {
         'moodType': moodType,
-        if (comment != null) 'comment': comment,
+        'comment': ?comment,
       });
       await fetchMoodWeekly();
       return true;
@@ -280,8 +280,8 @@ class FeaturesProvider extends ChangeNotifier {
       final formData = FormData.fromMap({
         'latitude': latitude,
         'longitude': longitude,
-        if (description != null) 'description': description,
-        if (address != null) 'address': address,
+        'description': ?description,
+        'address': ?address,
         if (photoFile != null)
           'photo': await MultipartFile.fromFile(photoFile.path, filename: photoFile.path.split('/').last),
       });
@@ -309,7 +309,7 @@ class FeaturesProvider extends ChangeNotifier {
     try {
       final r = await _dio.post(ApiEndpoints.todos, data: {
         'title': title,
-        if (responsibleUserId != null) 'responsibleUserId': responsibleUserId,
+        'responsibleUserId': ?responsibleUserId,
       });
       todos.add(TodoModel.fromJson(r.data));
       notifyListeners();

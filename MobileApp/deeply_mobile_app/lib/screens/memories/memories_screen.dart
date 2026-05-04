@@ -269,7 +269,7 @@ class _MemoriesScreenState extends State<MemoriesScreen> {
                     memory.photoUrl!,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       height: 200,
                       color: AppColors.bgInput,
                       child: const Center(
@@ -527,7 +527,7 @@ class _MemoryCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (_, _, _) => Container(
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(

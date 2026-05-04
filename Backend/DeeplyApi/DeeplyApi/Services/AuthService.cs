@@ -22,18 +22,18 @@ public class AuthService(AppDbContext db, JwtService jwtService) : IAuthService
         var exists = await db.Users.AnyAsync(x => x.Email == email);
         if (exists) return new BadRequestObjectResult(new { message = "User already exists" });
 
-        var gendre = await db.Gendres.FirstOrDefaultAsync(x => x.Name.ToLower() == genderName.ToLower());
-        if (gendre is null)
+        var gender = await db.Genders.FirstOrDefaultAsync(x => x.Name.ToLower() == genderName.ToLower());
+        if (gender is null)
         {
-            gendre = new Gendre { Name = genderName };
-            db.Gendres.Add(gendre);
+            gender = new Gender { Name = genderName };
+            db.Genders.Add(gender);
         }
 
         var user = new User
         {
             Email = email,
             Name = request.Name.Trim(),
-            Gendre = gendre,
+            Gender = gender,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
         };
         db.Users.Add(user);

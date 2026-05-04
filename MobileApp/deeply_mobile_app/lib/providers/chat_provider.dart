@@ -20,8 +20,8 @@ class ChatProvider extends ChangeNotifier {
   Future<bool> sendMessage({String? text, String? photoUrl}) async {
     try {
       final r = await _dio.post(ApiEndpoints.chatSend, data: {
-        if (text != null) 'text': text,
-        if (photoUrl != null) 'photoUrl': photoUrl,
+        'text': ?text,
+        'photoUrl': ?photoUrl,
       });
       messages.add(MessageModel.fromJson(r.data));
       notifyListeners();
