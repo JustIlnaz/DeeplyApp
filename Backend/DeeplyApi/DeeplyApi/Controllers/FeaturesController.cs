@@ -18,8 +18,17 @@ public class FeaturesController : ControllerBase
 
     [HttpPost]
     [Route("memories")]
-    public async Task<IActionResult> AddMemory(CreateMemoryRequest request)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> AddMemory([FromForm] CreateMemoryRequest request)
     {
+        Console.WriteLine($"=== CONTROLLER AddMemory ===");
+        Console.WriteLine($"Request Photo null: {request.Photo == null}");
+        Console.WriteLine($"Request Video null: {request.Video == null}");
+        Console.WriteLine($"Request Text: {request.Text}");
+        if (request.Photo != null)
+        {
+            Console.WriteLine($"Photo FileName: {request.Photo.FileName}, Length: {request.Photo.Length}");
+        }
         return await ExecuteAuthorized(userId => _service.AddMemory(userId, request));
     }
 
@@ -165,8 +174,14 @@ public class FeaturesController : ControllerBase
 
     [HttpPost]
     [Route("love-map/points")]
-    public async Task<IActionResult> AddLovePoint(CreateLovePointRequest request)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> AddLovePoint([FromForm] CreateLovePointRequest request)
     {
+        Console.WriteLine($"=== CONTROLLER AddLovePoint ===");
+        Console.WriteLine($"Lat: {request.Latitude}, Lng: {request.Longitude}");
+        Console.WriteLine($"Photo null: {request.Photo == null}, Video null: {request.Video == null}");
+        if (request.Photo != null)
+            Console.WriteLine($"Photo: {request.Photo.FileName}, {request.Photo.Length} bytes");
         return await ExecuteAuthorized(userId => _service.AddLovePoint(userId, request));
     }
 
@@ -240,6 +255,27 @@ public class FeaturesController : ControllerBase
         return await ExecuteAuthorized(_service.ClosenessIndex);
     }
 
+    [HttpGet]
+    [Route("test-uploads")]
+    public IActionResult TestUploads()
+    {
+        var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        var memoriesPath = Path.Combine(uploadsPath, "memories");
+        var lovemapPath = Path.Combine(uploadsPath, "lovemap");
+        
+        var result = new
+        {
+            uploadsPathExists = Directory.Exists(uploadsPath),
+            memoriesPathExists = Directory.Exists(memoriesPath),
+            lovemapPathExists = Directory.Exists(lovemapPath),
+            memoriesFiles = Directory.Exists(memoriesPath) ? Directory.GetFiles(memoriesPath).Select(f => Path.GetFileName(f)).ToList() : new List<string>(),
+            lovemapFiles = Directory.Exists(lovemapPath) ? Directory.GetFiles(lovemapPath).Select(f => Path.GetFileName(f)).ToList() : new List<string>(),
+            currentDirectory = Directory.GetCurrentDirectory()
+        };
+        
+        return Ok(result);
+    }
+
     private async Task<IActionResult> ExecuteAuthorized(Func<int, Task<ActionResult>> action)
     {
         if (!TryResolveUserId(out var userId))
@@ -258,17 +294,31 @@ public class FeaturesController : ControllerBase
     {
         userId = 0;
         var header = HttpContext.Request.Headers.Authorization.ToString();
-        var token = string.IsNullOrWhiteSpace(header) ? HttpContext.Request.Headers["Authorization"].ToString() : header.Trim();
+        Console.WriteLine($"[Auth] Authorization header: {header?.Substring(0, Math.Min(50, header?.Length ?? 0))}...");
+        
+        if (string.IsNullOrWhiteSpace(header)) return false;
+        
+        // Убираем префикс "Bearer "
+        var token = header.Trim();
+        if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            token = token.Substring(7).Trim();
+        
+        Console.WriteLine($"[Auth] Token after Bearer removal: {token?.Substring(0, Math.Min(50, token?.Length ?? 0))}...");
+        
         if (string.IsNullOrWhiteSpace(token)) return false;
 
         try
         {
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
             var rawUserId = jwt.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
-            return int.TryParse(rawUserId, out userId);
+            Console.WriteLine($"[Auth] Found userId claim: {rawUserId}");
+            var result = int.TryParse(rawUserId, out userId);
+            Console.WriteLine($"[Auth] Parse result: {result}, userId: {userId}");
+            return result;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"[Auth] Exception: {ex.Message}");
             return false;
         }
     }

@@ -8,12 +8,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DeeplyApi.Services;
 
-public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatureService
+public class FeatureService(AppDbContext db, IBackgroundJobClient jobs, ILogger<FeatureService> logger) : IFeatureService
 {
     public async Task<ActionResult> AddMemory(int userId, CreateMemoryRequest request)
     {
+        logger.LogInformation("=== AddMemory START ===");
+        logger.LogInformation("UserId: {UserId}, Text: {Text}, IsPinned: {IsPinned}", userId, request.Text, request.IsPinned);
+        logger.LogInformation("Photo is null: {PhotoIsNull}, Video is null: {VideoIsNull}", request.Photo == null, request.Video == null);
+        
         var couple = await GetCouple(userId);
-        if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
+        if (couple is null) 
+        {
+            logger.LogWarning("No couple found for user {UserId}", userId);
+            return new BadRequestObjectResult(new { message = "No couple connected" });
+        }
         
         string? photoUrl = null;
         string? videoUrl = null;
@@ -21,15 +29,30 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
         // Save photo if provided
         if (request.Photo != null)
         {
+            logger.LogInformation("Photo received: Name={Name}, Length={Length}, ContentType={ContentType}", 
+                request.Photo.FileName, request.Photo.Length, request.Photo.ContentType);
+            
             var photoExt = Path.GetExtension(request.Photo.FileName);
             var photoFileName = $"{Guid.NewGuid()}{photoExt}";
-            var photoPath = Path.Combine("wwwroot", "uploads", "memories", photoFileName);
+            var photoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "memories", photoFileName);
+            
+            logger.LogInformation("Saving photo to: {Path}", photoPath);
+            
             Directory.CreateDirectory(Path.GetDirectoryName(photoPath)!);
             using (var stream = new FileStream(photoPath, FileMode.Create))
             {
                 await request.Photo.CopyToAsync(stream);
             }
+            
+            // Проверяем что файл сохранился
+            var fileInfo = new FileInfo(photoPath);
+            logger.LogInformation("Photo saved: Exists={Exists}, Size={Size}", fileInfo.Exists, fileInfo.Length);
+            
             photoUrl = $"/uploads/memories/{photoFileName}";
+        }
+        else
+        {
+            logger.LogWarning("Photo is NULL!");
         }
         
         // Save video if provided
@@ -37,7 +60,7 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
         {
             var videoExt = Path.GetExtension(request.Video.FileName);
             var videoFileName = $"{Guid.NewGuid()}{videoExt}";
-            var videoPath = Path.Combine("wwwroot", "uploads", "memories", videoFileName);
+            var videoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "memories", videoFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(videoPath)!);
             using (var stream = new FileStream(videoPath, FileMode.Create))
             {
@@ -236,23 +259,53 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
 
     public async Task<ActionResult> AddLovePoint(int userId, CreateLovePointRequest request)
     {
+        logger.LogInformation("=== AddLovePoint START === UserId: {UserId}", userId);
+        logger.LogInformation("Photo null: {PhotoNull}, Video null: {VideoNull}", request.Photo == null, request.Video == null);
+        
         var couple = await GetCouple(userId);
-        if (couple is null) return new BadRequestObjectResult(new { message = "No couple connected" });
+        if (couple is null) 
+        {
+            logger.LogWarning("No couple for user {UserId}", userId);
+            return new BadRequestObjectResult(new { message = "No couple connected" });
+        }
         
         string? photoUrl = null;
+        string? videoUrl = null;
         
         // Save photo if provided
         if (request.Photo != null)
         {
+            logger.LogInformation("Photo received: {Name}, {Length} bytes", request.Photo.FileName, request.Photo.Length);
             var photoExt = Path.GetExtension(request.Photo.FileName);
             var photoFileName = $"{Guid.NewGuid()}{photoExt}";
-            var photoPath = Path.Combine("wwwroot", "uploads", "lovemap", photoFileName);
+            var photoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "lovemap", photoFileName);
+            logger.LogInformation("Saving to: {Path}", photoPath);
             Directory.CreateDirectory(Path.GetDirectoryName(photoPath)!);
             using (var stream = new FileStream(photoPath, FileMode.Create))
             {
                 await request.Photo.CopyToAsync(stream);
             }
+            var fileInfo = new FileInfo(photoPath);
+            logger.LogInformation("Saved: Exists={Exists}, Size={Size}", fileInfo.Exists, fileInfo.Length);
             photoUrl = $"/uploads/lovemap/{photoFileName}";
+        }
+        else
+        {
+            logger.LogWarning("Photo is NULL in service!");
+        }
+        
+        // Save video if provided
+        if (request.Video != null)
+        {
+            var videoExt = Path.GetExtension(request.Video.FileName);
+            var videoFileName = $"{Guid.NewGuid()}{videoExt}";
+            var videoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "lovemap", videoFileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(videoPath)!);
+            using (var stream = new FileStream(videoPath, FileMode.Create))
+            {
+                await request.Video.CopyToAsync(stream);
+            }
+            videoUrl = $"/uploads/lovemap/{videoFileName}";
         }
         
         var point = new LoveMapPoint { 
@@ -260,11 +313,13 @@ public class FeatureService(AppDbContext db, IBackgroundJobClient jobs) : IFeatu
             Latitude = request.Latitude, 
             Longitude = request.Longitude, 
             PhotoUrl = photoUrl, 
+            VideoUrl = videoUrl,
             Description = request.Description,
             Address = request.Address 
         };
         db.LoveMapPoints.Add(point);
         await db.SaveChangesAsync();
+        logger.LogInformation("=== AddLovePoint SUCCESS === PointId: {PointId}, PhotoUrl: {PhotoUrl}", point.Id, point.PhotoUrl);
         return new OkObjectResult(point);
     }
 

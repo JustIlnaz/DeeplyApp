@@ -44,6 +44,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Настройка статических файлов с явным путем
+var staticFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(staticFilesPath),
+    RequestPath = ""
+});
 app.UseHangfireDashboard("/hangfire");
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat");
@@ -52,6 +60,12 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    
+    // Создаем директории для загрузки файлов
+    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+    Directory.CreateDirectory(Path.Combine(uploadsPath, "memories"));
+    Directory.CreateDirectory(Path.Combine(uploadsPath, "lovemap"));
+    
     if (!db.ChallengeTemplates.Any())
     {
         db.ChallengeTemplates.AddRange(
