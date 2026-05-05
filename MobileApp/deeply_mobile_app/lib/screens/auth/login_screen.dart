@@ -147,9 +147,9 @@ class _LoginScreenState extends State<LoginScreen>
                           controller: _passwordController,
                         ),
                         const SizedBox(height: 16),
-                        // Remember me + Forgot password
+                        // Remember me
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Row(
                               children: [
@@ -184,17 +184,6 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                 ),
                               ],
-                            ),
-                            GestureDetector(
-                              onTap: () {},
-                              child: const Text(
-                                'Забыл пароль?',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
                             ),
                           ],
                         ),
